@@ -203,6 +203,14 @@
     v-if="processing || downloading"
     :progress="processing ? progress : downloadProgress"
   />
+
+  <!-- Image Selector Modal -->
+  <ImageSelector
+    v-if="showImageSelector"
+    :files="uploadedFiles"
+    @close="showImageSelector = false"
+    @confirm="handleApplyToSelected"
+  />
 </template>
 
 <script setup lang="ts">
@@ -219,6 +227,7 @@ import Card from '~/components/ui/Card.vue'
 import CardHeader from '~/components/ui/CardHeader.vue'
 import CardTitle from '~/components/ui/CardTitle.vue'
 import CardContent from '~/components/ui/CardContent.vue'
+import ImageSelector from '~/components/ImageSelector.vue'
 
 // 图片状态接口
 interface ImageState {
@@ -278,6 +287,9 @@ const { processImage } = useImageProcessor()
 // 下载进度（独立于批量处理进度）
 const downloading = ref(false)
 const downloadProgress = ref({ current: 0, total: 0, percent: 0 })
+
+// 图片选择对话框
+const showImageSelector = ref(false)
 
 // 处理上传 - 为每张图片初始化默认状态
 function handleUpload(files: File[]) {
@@ -427,8 +439,62 @@ async function applyToAll() {
 
 // 应用到部分图片
 function applyToSelected() {
-  // TODO: 打开图片选择弹窗
-  alert('图片选择功能开发中...')
+  showImageSelector.value = true
+}
+
+// 处理选中的图片
+async function handleApplyToSelected(selectedFiles: File[]) {
+  showImageSelector.value = false
+
+  if (selectedFiles.length === 0) return
+
+  if (!confirm(`确定要将当前模板应用到选中的 ${selectedFiles.length} 张图片吗？`)) {
+    return
+  }
+
+  // 1. 将当前状态应用到选中的图片
+  selectedFiles.forEach(file => {
+    imageStates.value.set(file, {
+      templateId: currentTemplateId.value,
+      config: { ...currentConfig.value }
+    })
+  })
+
+  // 2. 如果是"不处理"模板，清除选中图片的处理缓存
+  if (currentTemplateId.value === 'noProcess') {
+    selectedFiles.forEach(file => {
+      processedCache.value.delete(file)
+      previewUrls.value.delete(file)
+    })
+    alert('已应用到选中的图片！')
+    return
+  }
+
+  // 3. 批量处理选中的图片并缓存结果
+  try {
+    const results = await processBatch(
+      selectedFiles,
+      currentTemplate.value.processors,
+      currentConfig.value
+    )
+
+    // 缓存处理结果和预览URL
+    results.forEach(result => {
+      processedCache.value.set(result.file, {
+        canvas: result.canvas,
+        blob: result.blob
+      })
+
+      // 生成预览 URL（Data URL）
+      const previewUrl = result.canvas.toDataURL('image/jpeg', 0.8)
+      previewUrls.value.set(result.file, previewUrl)
+    })
+
+    alert(`处理完成！已应用到 ${selectedFiles.length} 张图片。`)
+  } catch (error) {
+    console.error('Processing error:', error)
+    alert('处理失败，请查看控制台')
+  }
 }
 
 // 下载当前图片
