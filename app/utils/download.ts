@@ -1,5 +1,5 @@
 import JSZip from 'jszip'
-import { saveAs } from 'file-saver'
+import FileSaver from 'file-saver'
 
 /**
  * 导出工具函数
@@ -22,7 +22,7 @@ export async function downloadImages(
     // 单张：直接导出
     const result = results[0]
     const fileName = generateFileName(result.name)
-    saveAs(result.blob, fileName)
+    FileSaver.saveAs(result.blob, fileName)
   } else {
     // 多张：打包 ZIP
     const zip = new JSZip()
@@ -41,7 +41,7 @@ export async function downloadImages(
 
     // 导出 ZIP
     const timestamp = new Date().toISOString().slice(0, 10)
-    saveAs(zipBlob, `photix-mark-${timestamp}.zip`)
+    FileSaver.saveAs(zipBlob, `photix-mark-${timestamp}.zip`)
   }
 }
 
