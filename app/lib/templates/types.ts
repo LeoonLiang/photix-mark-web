@@ -6,7 +6,8 @@ import type { ProcessorStep } from '~/lib/processors/types'
 export interface TemplateUserOptions {
   /** EXIF 字段显示控制 */
   exifFields?: {
-    showCamera?: boolean
+    showBrand?: boolean
+    showModel?: boolean
     showLens?: boolean
     showFocalLength?: boolean
     showAperture?: boolean

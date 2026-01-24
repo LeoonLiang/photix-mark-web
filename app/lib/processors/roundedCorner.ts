@@ -11,12 +11,17 @@ export class RoundedCornerProcessor extends ImageProcessor {
 
   process(ctx: ProcessorContext): ProcessorContext {
     const canvas = ctx.buffer[0]
-    const radius = ctx.config.border_radius || 20
+    const borderRadiusConfig = ctx.config.border_radius || 0.01
 
     if (!canvas) {
       console.warn('[RoundedCornerProcessor] No canvas in buffer')
       return ctx
     }
+
+    // 支持百分比（0-1）或固定像素
+    const radius = borderRadiusConfig < 1
+      ? borderRadiusConfig * canvas.height  // 百分比
+      : borderRadiusConfig  // 固定像素
 
     const roundedCanvas = createCanvas(canvas.width, canvas.height)
     const rCtx = roundedCanvas.getContext('2d')!

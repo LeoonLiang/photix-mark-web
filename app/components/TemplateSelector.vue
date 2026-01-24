@@ -5,31 +5,29 @@
       :key="template.id"
       @click="$emit('select', template.id)"
       :class="[
-        'w-full text-left px-4 py-3 rounded-lg border transition-all',
+        'w-full text-left px-4 py-3 rounded-lg border-2 transition-all duration-200',
         selectedId === template.id
-          ? 'border-blue-500 bg-blue-50 text-blue-700'
-          : 'border-gray-200 hover:border-blue-300 hover:bg-gray-50'
+          ? 'border-primary bg-primary/5 shadow-md scale-[1.02]'
+          : 'border-border hover:border-primary/50 hover:bg-accent'
       ]"
     >
       <div class="flex items-center">
         <div
           :class="[
-            'w-4 h-4 rounded-full border-2 mr-3',
+            'w-5 h-5 rounded-full border-2 mr-3 flex items-center justify-center flex-shrink-0',
             selectedId === template.id
-              ? 'border-blue-500 bg-blue-500'
-              : 'border-gray-300'
+              ? 'border-primary bg-primary'
+              : 'border-input'
           ]"
         >
           <div
             v-if="selectedId === template.id"
-            class="w-full h-full flex items-center justify-center"
-          >
-            <div class="w-2 h-2 bg-white rounded-full"></div>
-          </div>
+            class="w-2 h-2 bg-primary-foreground rounded-full"
+          />
         </div>
-        <div>
-          <div class="font-medium">{{ template.name }}</div>
-          <div class="text-xs text-gray-500">{{ template.description }}</div>
+        <div class="flex-1 min-w-0">
+          <div class="font-medium text-foreground">{{ template.name }}</div>
+          <div class="text-xs text-muted-foreground truncate">{{ template.description }}</div>
         </div>
       </div>
     </button>

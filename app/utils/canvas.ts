@@ -156,5 +156,18 @@ export function parseColor(color: string | number[]): string {
       return `rgba(${color[0]}, ${color[1]}, ${color[2]}, ${color[3] / 255})`
     }
   }
+
+  // 支持字符串元组格式 "(r,g,b)" 或 "(r,g,b,a)"
+  if (typeof color === 'string') {
+    const tupleMatch = color.match(/^\((\d+),\s*(\d+),\s*(\d+)(?:,\s*(\d+))?\)$/)
+    if (tupleMatch) {
+      const [, r, g, b, a] = tupleMatch
+      if (a !== undefined) {
+        return `rgba(${r}, ${g}, ${b}, ${parseInt(a) / 255})`
+      }
+      return `rgb(${r}, ${g}, ${b})`
+    }
+  }
+
   return color as string
 }

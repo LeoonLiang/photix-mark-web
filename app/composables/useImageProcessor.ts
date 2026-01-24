@@ -60,8 +60,9 @@ export function useImageProcessor() {
       }
     }
 
-    // 5. 返回最终 Canvas
-    return context.buffer[0]
+    // 5. 返回最终 Canvas（通常是 buffer 的最后一层）
+    const finalCanvas = context.buffer[context.buffer.length - 1] || context.buffer[0]
+    return finalCanvas
   }
 
   return {

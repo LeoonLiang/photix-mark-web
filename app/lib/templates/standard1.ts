@@ -14,32 +14,33 @@ export const standard1: TemplateConfig = {
     {
       processor_name: 'watermark',
       left_top: {
-        text: '{{exif.CameraModelName}}',
+        text: '{{Make|replace("CORPORATION", "")}} {{Model}}',
         color: '#000000',
         is_bold: true
       },
       left_bottom: {
-        text: '{{exif.LensModel}}',
+        text: '{{LensModel|default("Unknown Lens")}}',
         color: '#242424'
       },
       right_top: {
-        text: '{{exif.FocalLengthIn35mmFormat}} f/{{exif.FNumber}} {{exif.ShutterSpeed}}s ISO{{exif.ISO}}',
-        color: '#242424'
+        text: '{{FocalLength}}mm f/{{FNumber}} {{ExposureTime|shutter}} ISO{{ISO}}',
+        color: '#242424',
+        is_bold: true
       },
       right_bottom: {
-        text: '{{exif.DateTimeOriginal}}',
+        text: '{{DateTimeOriginal|datetime}}',
         color: '#242424'
       },
-      right_logo: '/logos/default.png',
+      right_logo: '{{Make|logo}}',
       delimiter_color: '#D8D8D6',
-      right_alignment: 'left',
       color: 'white'
     }
   ],
 
   userOptions: {
     exifFields: {
-      showCamera: true,
+      showBrand: true,
+      showModel: true,
       showLens: true,
       showFocalLength: true,
       showAperture: true,
@@ -50,10 +51,6 @@ export const standard1: TemplateConfig = {
     logo: {
       enabled: true,
       position: 'right-bottom'
-    },
-    colors: {
-      textColor: '#242424',
-      backgroundColor: '#FFFFFF'
     }
   }
 }

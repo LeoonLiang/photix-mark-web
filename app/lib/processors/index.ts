@@ -12,6 +12,13 @@ import { WatermarkProcessor } from './watermark'
 import { BlurProcessor } from './blur'
 import { ShadowProcessor } from './shadow'
 import { RoundedCornerProcessor } from './roundedCorner'
+import { MarginProcessor } from './margin'
+import { RichTextProcessor } from './richText'
+import { AlignmentProcessor } from './alignment'
+import { MultiRichTextProcessor } from './multiRichText'
+import { ConcatProcessor } from './concat'
+import { ResizeProcessor } from './resize'
+import { CropProcessor } from './crop'
 import { registerProcessor } from './registry'
 
 /**
@@ -24,6 +31,13 @@ export function initProcessors() {
   registerProcessor(BlurProcessor)
   registerProcessor(ShadowProcessor)
   registerProcessor(RoundedCornerProcessor)
+  registerProcessor(MarginProcessor)
+  registerProcessor(RichTextProcessor)
+  registerProcessor(AlignmentProcessor)
+  registerProcessor(MultiRichTextProcessor)
+  registerProcessor(ConcatProcessor)
+  registerProcessor(ResizeProcessor)
+  registerProcessor(CropProcessor)
 
   console.log('[Processors] All processors initialized')
 }

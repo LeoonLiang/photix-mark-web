@@ -11,6 +11,8 @@ export function useExif() {
    */
   async function readExif(file: File): Promise<Record<string, any>> {
     try {
+      console.log('[useExif] Reading EXIF from file:', file.name)
+
       const exif = await exifr.parse(file, {
         // 读取所有可用的 EXIF 标签
         pick: [
@@ -50,9 +52,10 @@ export function useExif() {
         ]
       })
 
+      console.log('[useExif] EXIF data:', exif)
       return exif || {}
     } catch (error) {
-      console.error('Failed to read EXIF:', error)
+      console.error('[useExif] Failed to read EXIF:', error)
       return {}
     }
   }
