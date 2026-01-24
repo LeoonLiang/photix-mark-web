@@ -22,7 +22,7 @@
             </svg>
           </div>
           <p class="text-sm text-slate-600 font-medium">隐私安全</p>
-          <p class="text-xs text-slate-400">纯前端处理</p>
+          <p class="text-xs text-slate-400">本地处理</p>
         </div>
         <div class="text-center p-4">
           <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mx-auto mb-2">
@@ -55,8 +55,8 @@
 
   <!-- 已上传状态：编辑器 -->
   <div v-else class="h-screen flex flex-col bg-gradient-to-br from-slate-50 to-slate-100 overflow-hidden">
-    <!-- Header -->
-    <header class="glass-effect border-b border-slate-200/50 h-16 flex-shrink-0 flex items-center px-6 shadow-sm">
+    <!-- Header - 桌面端 -->
+    <header class="glass-effect border-b border-slate-200/50 h-16 flex-shrink-0 items-center px-6 shadow-sm hidden lg:flex">
       <div class="flex items-center gap-3">
         <div class="w-10 h-10 bg-gradient-to-br from-primary to-blue-600 rounded-xl flex items-center justify-center text-white font-bold shadow-lg">
           <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -74,13 +74,37 @@
           <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
           </svg>
+          重新选择
+        </Button>
+      </div>
+    </header>
+
+    <!-- Mobile Header - 移动端简化版 -->
+    <header class="glass-effect border-b border-slate-200/50 h-14 flex-shrink-0 flex items-center px-4 shadow-sm lg:hidden">
+      <div class="flex items-center gap-2">
+        <div class="w-8 h-8 bg-gradient-to-br from-primary to-blue-600 rounded-lg flex items-center justify-center text-white">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+          </svg>
+        </div>
+        <div>
+          <h1 class="font-bold text-base text-slate-800">Photix Mark</h1>
+          <p class="text-xs text-slate-400">{{ uploadedFiles.length }} 张图片</p>
+        </div>
+      </div>
+
+      <div class="ml-auto">
+        <Button @click="resetApp" variant="outline" size="sm" class="text-xs px-2 py-1">
+          <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+          </svg>
           重新上传
         </Button>
       </div>
     </header>
 
-    <!-- Main Editor -->
-    <main class="flex-1" style="min-height: 0; overflow: hidden; padding: 16px;">
+    <!-- Main Editor - 桌面端 -->
+    <main class="flex-1 hidden lg:block" style="min-height: 0; overflow: hidden; padding: 16px;">
       <div class="h-full grid grid-cols-12" style="gap: 16px;">
         <!-- Left: Image Carousel (70%) -->
         <div class="col-span-12 lg:col-span-8" style="min-height: 0;">
@@ -104,12 +128,7 @@
           <!-- Template Selection -->
           <Card class="bg-white/80 backdrop-blur shadow-lg">
             <CardHeader class="border-b bg-gradient-to-r from-slate-50 to-white py-3">
-              <div class="flex items-center gap-2">
-                <svg class="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
-                </svg>
-                <CardTitle class="text-base">模板选择</CardTitle>
-              </div>
+              <CardTitle class="text-base">模板选择</CardTitle>
             </CardHeader>
             <CardContent>
               <TemplateSelector
@@ -123,12 +142,7 @@
           <!-- Template Configuration -->
           <Card v-if="currentTemplateId !== 'noProcess'" class="bg-white/80 backdrop-blur shadow-lg">
             <CardHeader class="border-b bg-gradient-to-r from-slate-50 to-white py-3">
-              <div class="flex items-center gap-2">
-                <svg class="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
-                </svg>
-                <CardTitle class="text-base">模板配置</CardTitle>
-              </div>
+              <CardTitle class="text-base">模板配置</CardTitle>
             </CardHeader>
             <CardContent>
               <TemplateConfig
@@ -177,7 +191,7 @@
                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                 </svg>
-                下载当前图片
+                导出当前图片
               </Button>
 
               <Button
@@ -188,10 +202,129 @@
                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10" />
                 </svg>
-                下载全部图片
+                导出全部图片
               </Button>
             </div>
           </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Mobile Main - 移动端布局 -->
+    <main class="flex-1 lg:hidden flex flex-col relative" style="min-height: 0; overflow: hidden;">
+      <!-- Preview Area -->
+      <div class="flex-1" style="min-height: 0; padding: 8px;">
+        <div class="h-full bg-white/80 backdrop-blur shadow-lg rounded-lg" style="overflow: hidden; padding: 8px;">
+          <ClientOnly>
+            <ImageCarousel
+              :files="uploadedFiles"
+              :current-index="currentIndex"
+              :processors="currentTemplate.processors"
+              :user-config="currentConfig"
+              :preview-urls="previewUrls"
+              @update:current-index="currentIndex = $event"
+            />
+          </ClientOnly>
+        </div>
+      </div>
+
+      <!-- Bottom Control Tabs -->
+      <div class="flex-shrink-0 bg-white/95 backdrop-blur border-t border-slate-200/50 shadow-2xl">
+        <!-- Tab Headers -->
+        <div class="flex border-b border-slate-200/50">
+          <button
+            v-for="tab in mobileTabs"
+            :key="tab.id"
+            @click="currentMobileTab = tab.id"
+            :class="[
+              'flex-1 py-2.5 px-2 text-sm font-medium transition-all relative',
+              currentMobileTab === tab.id
+                ? 'text-primary'
+                : 'text-slate-500 hover:text-slate-700'
+            ]"
+          >
+            <div class="flex flex-col items-center gap-0.5">
+              <component :is="tab.icon" class="w-4 h-4" />
+              <span class="text-xs">{{ tab.label }}</span>
+            </div>
+            <div
+              v-if="currentMobileTab === tab.id"
+              class="absolute bottom-0 left-0 right-0 h-0.5 bg-primary"
+            ></div>
+          </button>
+        </div>
+
+        <!-- Tab Content -->
+        <div class="overflow-y-auto" style="max-height: 40vh;">
+          <!-- 模板配置 Tab -->
+          <div v-show="currentMobileTab === 'template'" class="p-3 space-y-3">
+            <!-- Template Selection -->
+            <TemplateSelector
+              :templates="templates"
+              :selected-id="currentTemplateId"
+              @select="handleTemplateSelect"
+            />
+
+            <!-- Template Configuration -->
+            <TemplateConfig
+              v-if="currentTemplateId !== 'noProcess'"
+              :template="currentTemplate"
+              v-model="currentConfig"
+            />
+          </div>
+
+          <!-- 应用 Tab -->
+          <div v-show="currentMobileTab === 'apply'" class="p-3 space-y-2">
+            <Button
+              @click="applyToAll"
+              :disabled="processing || currentTemplateId === 'noProcess'"
+              class="w-full"
+              size="lg"
+            >
+              <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              应用到所有图片
+            </Button>
+
+            <Button
+              @click="applyToSelected"
+              :disabled="processing || currentTemplateId === 'noProcess'"
+              variant="outline"
+              class="w-full"
+            >
+              <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+              </svg>
+              应用到部分图片
+            </Button>
+          </div>
+
+          <!-- 导出 Tab -->
+          <div v-show="currentMobileTab === 'export'" class="p-3 space-y-2">
+            <Button
+              @click="downloadCurrent"
+              variant="secondary"
+              class="w-full"
+              size="lg"
+            >
+              <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+              </svg>
+              导出当前图片
+            </Button>
+
+            <Button
+              @click="downloadAll"
+              variant="secondary"
+              class="w-full"
+            >
+              <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10" />
+              </svg>
+              导出全部图片
+            </Button>
           </div>
         </div>
       </div>
@@ -214,7 +347,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, computed } from 'vue'
+import { ref, watch, computed, defineComponent } from 'vue'
 import { useTemplates } from '~/composables/useTemplates'
 import { useBatchProcessor } from '~/composables/useBatchProcessor'
 import { useImageProcessor } from '~/composables/useImageProcessor'
@@ -290,6 +423,46 @@ const downloadProgress = ref({ current: 0, total: 0, percent: 0 })
 
 // 图片选择对话框
 const showImageSelector = ref(false)
+
+// 移动端 Tab 状态
+const currentMobileTab = ref('template')
+
+// 移动端 Tab 配置
+const mobileTabs = [
+  {
+    id: 'template',
+    label: '模板配置',
+    icon: defineComponent({
+      template: `
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+        </svg>
+      `
+    })
+  },
+  {
+    id: 'apply',
+    label: '应用',
+    icon: defineComponent({
+      template: `
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+        </svg>
+      `
+    })
+  },
+  {
+    id: 'export',
+    label: '导出',
+    icon: defineComponent({
+      template: `
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+        </svg>
+      `
+    })
+  }
+]
 
 // 处理上传 - 为每张图片初始化默认状态
 function handleUpload(files: File[]) {
@@ -531,10 +704,10 @@ async function downloadCurrent() {
       name: currentFile.name
     }])
 
-    alert('下载成功！')
+    alert('导出成功！')
   } catch (error) {
     console.error('Download error:', error)
-    alert('下载失败')
+    alert('导出失败')
   }
 }
 
@@ -590,10 +763,10 @@ async function downloadAll() {
     }
 
     await downloadImages(results)
-    alert('下载成功！')
+    alert('导出成功！')
   } catch (error) {
     console.error('Download error:', error)
-    alert('下载失败')
+    alert('导出失败')
   } finally {
     downloading.value = false
   }

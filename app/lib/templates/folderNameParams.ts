@@ -11,25 +11,35 @@ export const folderNameParams: TemplateConfig = {
   preview: '/templates/folder_name.jpg',
 
   processors: [
+    // 1. 生成时间戳文本
     {
-      processor_name: 'multi_rich_text',
-      text_segments: [
-        {
-          text: '{{DateTimeOriginal|datetime}}',
-          color: '(232,141,52)'
-        },
-        {
-          text: '    ',  // 间隔
-          color: '(232,141,52)'
-        },
-        {
-          text: '{{FocalLength}}mm f/{{FNumber}} {{ExposureTime|shutter}} ISO{{ISO}}',
-          color: '(232,141,52)'
-        }
-      ],
-      text_spacing: 0.01,
-      height: 0.03  // vh(3)
+      processor_name: 'rich_text',
+      text: '{{DateTimeOriginal|datetime}}',
+      showDateTime: true,
+      height: 0.03,
+      trim: true,
+      color: '(232,141,52)'
     },
+    // 2. 生成拍摄参数文本
+    {
+      processor_name: 'rich_text',
+      auto_params: true,
+      showFocalLength: true,
+      showAperture: true,
+      showShutter: true,
+      showISO: true,
+      height: 0.03,
+      trim: true,
+      color: '(232,141,52)'
+    },
+    // 3. 横向合并时间戳和参数
+    {
+      processor_name: 'concat',
+      spacing: 0.015,  // 文本间距
+      direction: 'horizontal',
+      select: [1, 2]  // 两个文字层
+    },
+    // 4. 将合并后的文本放置在右下角
     {
       processor_name: 'alignment',
       horizontal_alignment: 'right',

@@ -13,27 +13,36 @@ export const standard1: TemplateConfig = {
   processors: [
     {
       processor_name: 'watermark',
+      // 使用动态配置，支持用户自定义显示字段
+      showBrand: true,
+      showModel: true,
       left_top: {
-        text: '{{Make|replace("CORPORATION", "")}} {{Model}}',
         color: '#000000',
         is_bold: true
       },
+      showLens: true,
       left_bottom: {
         text: '{{LensModel|default("Unknown Lens")}}',
         color: '#242424'
       },
+      showFocalLength: true,
+      showAperture: true,
+      showShutter: true,
+      showISO: true,
       right_top: {
-        text: '{{FocalLength}}mm f/{{FNumber}} {{ExposureTime|shutter}} ISO{{ISO}}',
         color: '#242424',
         is_bold: true
       },
+      showDateTime: true,
       right_bottom: {
         text: '{{DateTimeOriginal|datetime}}',
         color: '#242424'
       },
+      logoEnabled: true,
       right_logo: '{{Make|logo}}',
       delimiter_color: '#D8D8D6',
-      color: 'white'
+      color: 'white',
+      textColor: '#242424'
     }
   ],
 

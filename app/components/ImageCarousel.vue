@@ -2,11 +2,12 @@
   <div class="h-full flex flex-col" style="box-sizing: border-box;">
     <!-- Main Image - flex-1 takes remaining space -->
     <div
-      class="flex items-center justify-center bg-gray-50 rounded-lg overflow-hidden"
+      class="flex items-center justify-center bg-gray-50 rounded-lg overflow-hidden cursor-pointer"
       :style="{
         flex: files.length > 1 ? '1 1 0' : '1 1 auto',
         minHeight: 0
       }"
+      @click="openPreview"
     >
       <img
         v-if="currentPreviewUrl"
@@ -22,16 +23,16 @@
       </div>
     </div>
 
-    <!-- Thumbnails Carousel - 固定148px总高度(16px padding + 96px thumbnails + 8px gap + 28px info) -->
-    <div v-if="files.length > 1" class="border-t" style="height: 148px; flex-shrink: 0; padding-top: 16px;">
-      <div class="flex items-center gap-2" style="height: 96px;">
+    <!-- Thumbnails Carousel - 固定高度缩小 -->
+    <div v-if="files.length > 1" class="border-t" style="height: 80px; flex-shrink: 0; padding-top: 8px;">
+      <div class="flex items-center gap-2 h-full">
         <!-- Previous Button -->
         <button
           @click="prevImage"
           :disabled="currentIndex === 0"
-          class="p-2 rounded-lg hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed transition-all flex-shrink-0"
+          class="p-1.5 rounded-lg hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed transition-all flex-shrink-0"
         >
-          <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
           </svg>
         </button>
@@ -44,7 +45,7 @@
               :key="index"
               @click="selectImage(index)"
               :class="[
-                'relative h-20 w-20 rounded-lg overflow-hidden cursor-pointer border-2 transition-all flex-shrink-0',
+                'relative h-14 w-14 rounded-lg overflow-hidden cursor-pointer border-2 transition-all flex-shrink-0',
                 currentIndex === index
                   ? 'border-primary ring-2 ring-primary ring-offset-2'
                   : 'border-transparent hover:border-gray-300'
@@ -62,7 +63,7 @@
                 </svg>
               </div>
               <!-- Current indicator -->
-              <div v-if="currentIndex === index" class="absolute top-1 right-1 bg-primary text-white text-xs px-1.5 py-0.5 rounded">
+              <div v-if="currentIndex === index" class="absolute top-0.5 right-0.5 bg-primary text-white text-[10px] px-1 py-0.5 rounded">
                 当前
               </div>
             </div>
@@ -73,18 +74,12 @@
         <button
           @click="nextImage"
           :disabled="currentIndex === files.length - 1"
-          class="p-2 rounded-lg hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed transition-all flex-shrink-0"
+          class="p-1.5 rounded-lg hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed transition-all flex-shrink-0"
         >
-          <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
           </svg>
         </button>
-      </div>
-
-      <!-- Image Info - 固定高度 -->
-      <div class="text-center text-sm text-gray-500" style="height: 28px; margin-top: 8px;">
-        <span class="font-medium text-gray-700">{{ currentIndex + 1 }}</span> / {{ files.length }}
-        <span class="ml-2 text-xs truncate inline-block max-w-xs">{{ files[currentIndex]?.name }}</span>
       </div>
     </div>
   </div>
@@ -257,4 +252,36 @@ onUnmounted(() => {
   })
   clearCache()
 })
+
+// 打开图片预览
+function openPreview() {
+  if (!currentPreviewUrl.value) return
+
+  // 创建预览元素
+  const img = document.createElement('img')
+  img.src = currentPreviewUrl.value
+
+  // 动态导入 viewerjs
+  import('viewerjs/dist/viewer.css')
+  import('viewerjs').then(({ default: Viewer }) => {
+    const viewer = new Viewer(img, {
+      inline: false,
+      navbar: false,
+      title: false,
+      toolbar: {
+        zoomIn: 1,
+        zoomOut: 1,
+        oneToOne: 1,
+        reset: 1,
+        rotateLeft: 1,
+        rotateRight: 1,
+      },
+      hidden() {
+        viewer.destroy()
+      }
+    })
+    viewer.show()
+  })
+}
+
 </script>

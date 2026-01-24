@@ -45,8 +45,16 @@ export function useImageProcessor() {
 
       try {
         const processor = new ProcessorClass()
+        // 保存用户配置
+        const savedUserConfig = { ...context.config }
         // 合并步骤配置到上下文
         context.config = { ...context.config, ...step }
+        // 用户配置优先级更高，重新应用用户的 show* 配置
+        Object.keys(savedUserConfig).forEach(key => {
+          if (key.startsWith('show') || key === 'logoEnabled') {
+            context.config[key] = savedUserConfig[key]
+          }
+        })
 
         // 执行处理
         const result = processor.process(context)

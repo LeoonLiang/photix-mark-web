@@ -25,6 +25,8 @@ export const blurBackground: TemplateConfig = {
     {
       processor_name: 'rich_text',
       auto_camera: true,  // 自动构建相机型号文本
+      showBrand: true,
+      showModel: true,
       height: 0.04,
       trim: true,
       color: 'white',
@@ -33,6 +35,10 @@ export const blurBackground: TemplateConfig = {
     {
       processor_name: 'rich_text',
       auto_params: true,  // 自动构建拍摄参数文本
+      showFocalLength: true,
+      showAperture: true,
+      showShutter: true,
+      showISO: true,
       height: 0.03,
       trim: true,
       color: 'white',

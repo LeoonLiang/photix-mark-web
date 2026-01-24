@@ -8,7 +8,7 @@ const props = defineProps<{
 </script>
 
 <template>
-  <p :class="cn('p-6 pt-0', props.class)">
+  <p :class="cn('p-4', props.class)">
     <slot />
   </p>
 </template>

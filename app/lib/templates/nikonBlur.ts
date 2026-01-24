@@ -48,6 +48,10 @@ export const nikonBlur: TemplateConfig = {
     {
       processor_name: 'rich_text',
       auto_params: true,  // 自动构建拍摄参数文本
+      showFocalLength: true,
+      showAperture: true,
+      showShutter: true,
+      showISO: true,
       height: 0.03,  // vh(3)
       trim: true,
       color: 'white'

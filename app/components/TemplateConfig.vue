@@ -1,104 +1,11 @@
 <template>
   <div class="space-y-4">
-    <!-- EXIF 字段配置 -->
-    <div v-if="hasAnyExifField">
-      <h3 class="text-sm font-medium text-gray-700 mb-2">EXIF 信息显示</h3>
-      <div class="space-y-2">
-        <label v-if="hasExifField('showBrand')" class="flex items-center text-sm">
-          <input
-            type="checkbox"
-            :checked="localConfig.showBrand"
-            @change="updateConfig('showBrand', ($event.target as HTMLInputElement).checked)"
-            class="mr-2 rounded"
-          />
-          <span>显示品牌</span>
-        </label>
-        <label v-if="hasExifField('showModel')" class="flex items-center text-sm">
-          <input
-            type="checkbox"
-            :checked="localConfig.showModel"
-            @change="updateConfig('showModel', ($event.target as HTMLInputElement).checked)"
-            class="mr-2 rounded"
-          />
-          <span>显示型号</span>
-        </label>
-        <label v-if="hasExifField('showLens')" class="flex items-center text-sm">
-          <input
-            type="checkbox"
-            :checked="localConfig.showLens"
-            @change="updateConfig('showLens', ($event.target as HTMLInputElement).checked)"
-            class="mr-2 rounded"
-          />
-          <span>显示镜头</span>
-        </label>
-        <label v-if="hasExifField('showFocalLength')" class="flex items-center text-sm">
-          <input
-            type="checkbox"
-            :checked="localConfig.showFocalLength"
-            @change="updateConfig('showFocalLength', ($event.target as HTMLInputElement).checked)"
-            class="mr-2 rounded"
-          />
-          <span>显示焦距</span>
-        </label>
-        <label v-if="hasExifField('showAperture')" class="flex items-center text-sm">
-          <input
-            type="checkbox"
-            :checked="localConfig.showAperture"
-            @change="updateConfig('showAperture', ($event.target as HTMLInputElement).checked)"
-            class="mr-2 rounded"
-          />
-          <span>显示光圈</span>
-        </label>
-        <label v-if="hasExifField('showShutter')" class="flex items-center text-sm">
-          <input
-            type="checkbox"
-            :checked="localConfig.showShutter"
-            @change="updateConfig('showShutter', ($event.target as HTMLInputElement).checked)"
-            class="mr-2 rounded"
-          />
-          <span>显示快门</span>
-        </label>
-        <label v-if="hasExifField('showISO')" class="flex items-center text-sm">
-          <input
-            type="checkbox"
-            :checked="localConfig.showISO"
-            @change="updateConfig('showISO', ($event.target as HTMLInputElement).checked)"
-            class="mr-2 rounded"
-          />
-          <span>显示 ISO</span>
-        </label>
-        <label v-if="hasExifField('showDateTime')" class="flex items-center text-sm">
-          <input
-            type="checkbox"
-            :checked="localConfig.showDateTime"
-            @change="updateConfig('showDateTime', ($event.target as HTMLInputElement).checked)"
-            class="mr-2 rounded"
-          />
-          <span>显示拍摄时间</span>
-        </label>
-      </div>
-    </div>
-
-    <!-- Logo 配置 -->
-    <div v-if="hasLogoConfig">
-      <h3 class="text-sm font-medium text-gray-700 mb-2">Logo 设置</h3>
-      <label class="flex items-center text-sm mb-2">
-        <input
-          type="checkbox"
-          :checked="localConfig.logoEnabled"
-          @change="updateConfig('logoEnabled', ($event.target as HTMLInputElement).checked)"
-          class="mr-2 rounded"
-        />
-        <span>显示 Logo</span>
-      </label>
-    </div>
-
     <!-- 颜色配置 -->
     <div v-if="hasColorConfig">
-      <h3 class="text-sm font-medium text-gray-700 mb-2">颜色设置</h3>
+      <h3 class="text-xs font-semibold text-gray-700 mb-2">颜色</h3>
       <div class="space-y-2">
         <div v-if="hasColor('textColor')">
-          <label class="text-xs text-gray-600">文字颜色</label>
+          <label class="text-xs text-gray-600 block mb-1">文字颜色</label>
           <input
             type="color"
             :value="localConfig.textColor"
@@ -107,7 +14,7 @@
           />
         </div>
         <div v-if="hasColor('backgroundColor')">
-          <label class="text-xs text-gray-600">背景颜色</label>
+          <label class="text-xs text-gray-600 block mb-1">背景颜色</label>
           <input
             type="color"
             :value="localConfig.backgroundColor"
@@ -115,6 +22,123 @@
             class="w-full h-10 rounded border border-gray-300"
           />
         </div>
+      </div>
+    </div>
+
+    <!-- Logo 和 EXIF 信息配置 - 合并 -->
+    <div v-if="hasLogoConfig || hasAnyExifField">
+      <div class="flex flex-wrap gap-2">
+        <!-- Logo 按钮 -->
+        <button
+          v-if="hasLogoConfig"
+          @click="toggleConfig('logoEnabled')"
+          :class="[
+            'px-3 py-1.5 text-xs font-medium rounded-md border transition-all',
+            localConfig.logoEnabled
+              ? 'bg-primary text-white border-primary'
+              : 'bg-white text-gray-700 border-gray-300 hover:border-primary/50'
+          ]"
+        >
+          Logo
+        </button>
+
+        <!-- EXIF 信息按钮 -->
+        <button
+          v-if="hasExifField('showBrand')"
+          @click="toggleConfig('showBrand')"
+          :class="[
+            'px-3 py-1.5 text-xs font-medium rounded-md border transition-all',
+            localConfig.showBrand
+              ? 'bg-primary text-white border-primary'
+              : 'bg-white text-gray-700 border-gray-300 hover:border-primary/50'
+          ]"
+        >
+          品牌
+        </button>
+        <button
+          v-if="hasExifField('showModel')"
+          @click="toggleConfig('showModel')"
+          :class="[
+            'px-3 py-1.5 text-xs font-medium rounded-md border transition-all',
+            localConfig.showModel
+              ? 'bg-primary text-white border-primary'
+              : 'bg-white text-gray-700 border-gray-300 hover:border-primary/50'
+          ]"
+        >
+          型号
+        </button>
+        <button
+          v-if="hasExifField('showLens')"
+          @click="toggleConfig('showLens')"
+          :class="[
+            'px-3 py-1.5 text-xs font-medium rounded-md border transition-all',
+            localConfig.showLens
+              ? 'bg-primary text-white border-primary'
+              : 'bg-white text-gray-700 border-gray-300 hover:border-primary/50'
+          ]"
+        >
+          镜头
+        </button>
+        <button
+          v-if="hasExifField('showFocalLength')"
+          @click="toggleConfig('showFocalLength')"
+          :class="[
+            'px-3 py-1.5 text-xs font-medium rounded-md border transition-all',
+            localConfig.showFocalLength
+              ? 'bg-primary text-white border-primary'
+              : 'bg-white text-gray-700 border-gray-300 hover:border-primary/50'
+          ]"
+        >
+          焦段
+        </button>
+        <button
+          v-if="hasExifField('showAperture')"
+          @click="toggleConfig('showAperture')"
+          :class="[
+            'px-3 py-1.5 text-xs font-medium rounded-md border transition-all',
+            localConfig.showAperture
+              ? 'bg-primary text-white border-primary'
+              : 'bg-white text-gray-700 border-gray-300 hover:border-primary/50'
+          ]"
+        >
+          光圈
+        </button>
+        <button
+          v-if="hasExifField('showShutter')"
+          @click="toggleConfig('showShutter')"
+          :class="[
+            'px-3 py-1.5 text-xs font-medium rounded-md border transition-all',
+            localConfig.showShutter
+              ? 'bg-primary text-white border-primary'
+              : 'bg-white text-gray-700 border-gray-300 hover:border-primary/50'
+          ]"
+        >
+          快门
+        </button>
+        <button
+          v-if="hasExifField('showISO')"
+          @click="toggleConfig('showISO')"
+          :class="[
+            'px-3 py-1.5 text-xs font-medium rounded-md border transition-all',
+            localConfig.showISO
+              ? 'bg-primary text-white border-primary'
+              : 'bg-white text-gray-700 border-gray-300 hover:border-primary/50'
+          ]"
+        >
+          ISO
+        </button>
+        <button
+          v-if="hasExifField('showDateTime')"
+          @click="toggleConfig('showDateTime')"
+          :class="[
+            'px-3 py-1.5 text-xs font-medium rounded-md border transition-all',
+            localConfig.showDateTime
+              ? 'bg-primary text-white border-primary'
+              : 'bg-white text-gray-700 border-gray-300 hover:border-primary/50'
+          ]"
+        >
+          拍摄时间
+        </button>
       </div>
     </div>
   </div>
@@ -193,6 +217,11 @@ function updateConfig(key: string, value: any) {
   }
   // 立即触发更新
   emit('update:modelValue', localConfig.value)
+}
+
+// 切换配置（用于按钮）
+function toggleConfig(key: string) {
+  updateConfig(key, !localConfig.value[key])
 }
 
 // 监听模板变化，重置配置

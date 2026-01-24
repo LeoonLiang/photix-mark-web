@@ -17,7 +17,7 @@
       </p>
 
       <p class="text-xs text-gray-400 text-center mt-4">
-        请稍候，处理完成后将自动下载
+        请稍候，处理完成后可导出文件
       </p>
     </div>
   </div>

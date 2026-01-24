@@ -2,24 +2,24 @@ import JSZip from 'jszip'
 import { saveAs } from 'file-saver'
 
 /**
- * 下载工具函数
+ * 导出工具函数
  */
 
 /**
- * 智能下载图片
- * 单张直接下载，多张打包 ZIP
+ * 智能导出图片
+ * 单张直接导出，多张打包 ZIP
  * @param results 处理结果数组
  */
 export async function downloadImages(
   results: Array<{ blob: Blob; name: string }>
 ): Promise<void> {
   if (results.length === 0) {
-    console.warn('No images to download')
+    console.warn('No images to export')
     return
   }
 
   if (results.length === 1) {
-    // 单张：直接下载
+    // 单张：直接导出
     const result = results[0]
     const fileName = generateFileName(result.name)
     saveAs(result.blob, fileName)
@@ -39,7 +39,7 @@ export async function downloadImages(
       compressionOptions: { level: 6 }
     })
 
-    // 下载 ZIP
+    // 导出 ZIP
     const timestamp = new Date().toISOString().slice(0, 10)
     saveAs(zipBlob, `photix-mark-${timestamp}.zip`)
   }
