@@ -26,11 +26,11 @@ export function useBatchProcessor() {
     files: File[],
     processors: ProcessorStep[],
     userConfig?: Record<string, any>
-  ): Promise<Array<{ blob: Blob; name: string }>> {
+  ): Promise<Array<{ file: File; canvas: HTMLCanvasElement; blob: Blob; name: string }>> {
     processing.value = true
     progress.value = { current: 0, total: files.length, percent: 0 }
 
-    const results: Array<{ blob: Blob; name: string }> = []
+    const results: Array<{ file: File; canvas: HTMLCanvasElement; blob: Blob; name: string }> = []
 
     // 顺序处理（避免内存爆炸）
     for (let i = 0; i < files.length; i++) {
@@ -44,6 +44,8 @@ export function useBatchProcessor() {
         const blob = await canvasToBlob(canvas, 'image/jpeg', 0.95)
 
         results.push({
+          file,
+          canvas,
           blob,
           name: file.name
         })

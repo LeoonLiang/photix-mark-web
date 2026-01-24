@@ -40,8 +40,8 @@ export function useWatermarkPreview() {
       // 缓存结果
       previewCache.value.set(cacheKey, dataUrl)
 
-      // 限制缓存大小（最多10张）
-      if (previewCache.value.size > 10) {
+      // 限制缓存大小（最多50张，避免内存溢出）
+      if (previewCache.value.size > 50) {
         const firstKey = previewCache.value.keys().next().value
         previewCache.value.delete(firstKey)
       }

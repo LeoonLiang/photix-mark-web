@@ -1,5 +1,6 @@
 import type { TemplateConfig } from '~/lib/templates/types'
 import {
+  noProcess,
   standard1,
   standard2,
   logoCentered,
@@ -16,6 +17,7 @@ export function useTemplates() {
    * 所有可用的模板
    */
   const templates = ref<TemplateConfig[]>([
+    noProcess,
     standard1,
     standard2,
     logoCentered,
@@ -25,9 +27,9 @@ export function useTemplates() {
   ])
 
   /**
-   * 当前选中的模板
+   * 当前选中的模板（默认不处理）
    */
-  const selectedTemplate = ref<TemplateConfig>(templates.value[0])
+  const selectedTemplate = ref<TemplateConfig>(noProcess)
 
   /**
    * 根据 ID 获取模板

@@ -45,11 +45,12 @@ export async function loadImageToCanvas(file: File): Promise<HTMLCanvasElement> 
 
 /**
  * 将 Canvas 转换为 Blob
+ * 使用高质量JPEG以确保Windows缩略图正常显示
  */
 export function canvasToBlob(
   canvas: HTMLCanvasElement,
   type: string = 'image/jpeg',
-  quality: number = 0.95
+  quality: number = 0.98
 ): Promise<Blob> {
   return new Promise((resolve, reject) => {
     canvas.toBlob(

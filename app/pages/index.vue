@@ -1,7 +1,62 @@
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
+  <!-- 未上传状态：欢迎页 -->
+  <div v-if="uploadedFiles.length === 0" class="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center p-4">
+    <div class="max-w-2xl w-full">
+      <!-- Logo & Title -->
+      <div class="text-center mb-8">
+        <div class="w-20 h-20 bg-gradient-to-br from-primary to-blue-600 rounded-2xl flex items-center justify-center text-white mx-auto mb-4 shadow-2xl">
+          <svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+          </svg>
+        </div>
+        <h1 class="text-4xl font-bold text-slate-800 mb-2">Photix Mark Web</h1>
+        <p class="text-lg text-slate-500">纯前端图片水印批量处理工具</p>
+      </div>
+
+      <!-- Features -->
+      <div class="grid grid-cols-3 gap-4 mb-8">
+        <div class="text-center p-4">
+          <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mx-auto mb-2">
+            <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+            </svg>
+          </div>
+          <p class="text-sm text-slate-600 font-medium">隐私安全</p>
+          <p class="text-xs text-slate-400">纯前端处理</p>
+        </div>
+        <div class="text-center p-4">
+          <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mx-auto mb-2">
+            <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+            </svg>
+          </div>
+          <p class="text-sm text-slate-600 font-medium">批量处理</p>
+          <p class="text-xs text-slate-400">一键添加水印</p>
+        </div>
+        <div class="text-center p-4">
+          <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mx-auto mb-2">
+            <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
+            </svg>
+          </div>
+          <p class="text-sm text-slate-600 font-medium">实时预览</p>
+          <p class="text-xs text-slate-400">即时查看效果</p>
+        </div>
+      </div>
+
+      <!-- Upload Card -->
+      <Card class="bg-white/90 backdrop-blur shadow-2xl">
+        <CardContent class="p-8">
+          <ImageUploader @upload="handleUpload" />
+        </CardContent>
+      </Card>
+    </div>
+  </div>
+
+  <!-- 已上传状态：编辑器 -->
+  <div v-else class="h-screen flex flex-col bg-gradient-to-br from-slate-50 to-slate-100 overflow-hidden">
     <!-- Header -->
-    <header class="glass-effect border-b border-slate-200/50 h-16 flex items-center px-6 shadow-sm">
+    <header class="glass-effect border-b border-slate-200/50 h-16 flex-shrink-0 flex items-center px-6 shadow-sm">
       <div class="flex items-center gap-3">
         <div class="w-10 h-10 bg-gradient-to-br from-primary to-blue-600 rounded-xl flex items-center justify-center text-white font-bold shadow-lg">
           <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -10,85 +65,44 @@
         </div>
         <div>
           <h1 class="font-bold text-lg text-slate-800 tracking-tight">Photix Mark Web</h1>
-          <p class="text-xs text-slate-400">v1.0.0</p>
+          <p class="text-xs text-slate-400">{{ uploadedFiles.length }} 张图片</p>
         </div>
+      </div>
+
+      <div class="ml-auto">
+        <Button @click="resetApp" variant="outline" size="sm">
+          <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+          </svg>
+          重新上传
+        </Button>
       </div>
     </header>
 
-    <!-- Main Content -->
-    <main class="p-4 h-[calc(100vh-64px)]">
-      <div class="grid grid-cols-12 gap-4 h-full">
-        <!-- Left: Preview Area (70%) -->
-        <div class="col-span-12 lg:col-span-8 h-full">
-          <Card class="h-full flex flex-col bg-white/80 backdrop-blur shadow-lg">
-            <CardHeader class="border-b bg-gradient-to-r from-slate-50 to-white py-3">
-              <CardTitle class="text-lg">预览区</CardTitle>
-            </CardHeader>
-            <CardContent class="flex-1 p-4 overflow-hidden">
-              <ClientOnly>
-                <ImagePreview
-                  :files="uploadedFiles"
-                  :current-index="currentIndex"
-                  :preview-mode="previewMode"
-                  :processors="selectedTemplate.processors"
-                  :user-config="userConfig"
-                  @update:current-index="currentIndex = $event"
-                  @update:preview-mode="previewMode = $event"
-                />
-                <template #fallback>
-                  <div class="h-full flex items-center justify-center">
-                    <div class="text-center text-muted-foreground">
-                      <svg class="animate-spin w-12 h-12 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                      </svg>
-                      <p>加载中...</p>
-                    </div>
-                  </div>
-                </template>
-              </ClientOnly>
-            </CardContent>
-          </Card>
+    <!-- Main Editor -->
+    <main class="flex-1" style="min-height: 0; overflow: hidden; padding: 16px;">
+      <div class="h-full grid grid-cols-12" style="gap: 16px;">
+        <!-- Left: Image Carousel (70%) -->
+        <div class="col-span-12 lg:col-span-8" style="min-height: 0;">
+          <div class="h-full bg-white/80 backdrop-blur shadow-lg rounded-lg" style="overflow: hidden; padding: 12px;">
+            <ClientOnly>
+              <ImageCarousel
+                :files="uploadedFiles"
+                :current-index="currentIndex"
+                :processors="currentTemplate.processors"
+                :user-config="currentConfig"
+                :preview-urls="previewUrls"
+                @update:current-index="currentIndex = $event"
+              />
+            </ClientOnly>
+          </div>
         </div>
 
         <!-- Right: Control Panel (30%) -->
-        <div class="col-span-12 lg:col-span-4 h-full overflow-y-auto space-y-4">
-          <!-- Upload Section -->
-          <Card class="bg-white/80 backdrop-blur shadow-lg animate-fade-in">
-            <CardHeader class="border-b bg-gradient-to-r from-slate-50 to-white flex-row items-center justify-between py-3">
-              <div class="flex items-center gap-2">
-                <svg class="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-                </svg>
-                <CardTitle class="text-base">上传图片</CardTitle>
-              </div>
-              <Badge v-if="uploadedFiles.length > 0" variant="secondary">
-                {{ uploadedFiles.length }} 张
-              </Badge>
-            </CardHeader>
-            <CardContent>
-              <ImageUploader @upload="handleUpload" />
-
-              <!-- Uploaded Files List -->
-              <div v-if="uploadedFiles.length > 0" class="mt-4">
-                <p class="text-sm font-medium text-muted-foreground mb-2">已上传文件</p>
-                <div class="space-y-1 max-h-32 overflow-y-auto">
-                  <div
-                    v-for="(file, index) in uploadedFiles"
-                    :key="index"
-                    class="text-xs text-muted-foreground truncate px-2 py-1.5 hover:bg-accent rounded-md transition-colors flex items-center gap-2"
-                  >
-                    <svg class="w-3 h-3 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                    </svg>
-                    <span class="truncate">{{ file.name }}</span>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
+        <div class="col-span-12 lg:col-span-4" style="min-height: 0; overflow: hidden;">
+          <div class="h-full overflow-y-auto space-y-4" style="padding-right: 4px;">
           <!-- Template Selection -->
-          <Card class="bg-white/80 backdrop-blur shadow-lg animate-fade-in">
+          <Card class="bg-white/80 backdrop-blur shadow-lg">
             <CardHeader class="border-b bg-gradient-to-r from-slate-50 to-white py-3">
               <div class="flex items-center gap-2">
                 <svg class="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -100,14 +114,14 @@
             <CardContent>
               <TemplateSelector
                 :templates="templates"
-                :selected-id="selectedTemplate.id"
+                :selected-id="currentTemplateId"
                 @select="handleTemplateSelect"
               />
             </CardContent>
           </Card>
 
           <!-- Template Configuration -->
-          <Card class="bg-white/80 backdrop-blur shadow-lg animate-fade-in">
+          <Card v-if="currentTemplateId !== 'noProcess'" class="bg-white/80 backdrop-blur shadow-lg">
             <CardHeader class="border-b bg-gradient-to-r from-slate-50 to-white py-3">
               <div class="flex items-center gap-2">
                 <svg class="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -118,53 +132,107 @@
             </CardHeader>
             <CardContent>
               <TemplateConfig
-                :template="selectedTemplate"
-                v-model="userConfig"
+                :template="currentTemplate"
+                v-model="currentConfig"
               />
             </CardContent>
           </Card>
 
-          <!-- Process Button -->
-          <Button
-            @click="handleProcess"
-            :disabled="uploadedFiles.length === 0 || processing"
-            class="w-full h-12 text-base shadow-lg"
-            size="lg"
-          >
-            <svg v-if="!processing" class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
-            </svg>
-            <svg v-else class="animate-spin w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-            </svg>
-            {{ processing ? '处理中...' : '开始处理' }}
-          </Button>
+          <!-- Action Buttons -->
+          <div class="space-y-3">
+            <!-- Apply Buttons -->
+            <div class="space-y-2">
+              <Button
+                @click="applyToAll"
+                :disabled="processing || currentTemplateId === 'noProcess'"
+                class="w-full"
+                size="lg"
+              >
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                应用到所有图片
+              </Button>
+
+              <Button
+                @click="applyToSelected"
+                :disabled="processing || currentTemplateId === 'noProcess'"
+                variant="outline"
+                class="w-full"
+              >
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                </svg>
+                应用到部分图片
+              </Button>
+            </div>
+
+            <!-- Download Buttons -->
+            <div class="space-y-2 pt-2 border-t">
+              <Button
+                @click="downloadCurrent"
+                variant="secondary"
+                class="w-full"
+              >
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                </svg>
+                下载当前图片
+              </Button>
+
+              <Button
+                @click="downloadAll"
+                variant="secondary"
+                class="w-full"
+              >
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10" />
+                </svg>
+                下载全部图片
+              </Button>
+            </div>
+          </div>
+          </div>
         </div>
       </div>
     </main>
-
-    <!-- Processing Progress Modal -->
-    <ProcessingProgress
-      v-if="processing"
-      :progress="progress"
-    />
   </div>
+
+  <!-- Processing Progress Modal -->
+  <ProcessingProgress
+    v-if="processing || downloading"
+    :progress="processing ? progress : downloadProgress"
+  />
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, watch, computed } from 'vue'
 import { useTemplates } from '~/composables/useTemplates'
 import { useBatchProcessor } from '~/composables/useBatchProcessor'
+import { useImageProcessor } from '~/composables/useImageProcessor'
 import { downloadImages } from '~/utils/download'
+import { canvasToBlob } from '~/utils/canvas'
 import { initProcessors } from '~/lib/processors'
+import type { TemplateConfig } from '~/lib/templates/types'
 import Button from '~/components/ui/Button.vue'
 import Card from '~/components/ui/Card.vue'
 import CardHeader from '~/components/ui/CardHeader.vue'
 import CardTitle from '~/components/ui/CardTitle.vue'
 import CardContent from '~/components/ui/CardContent.vue'
-import Badge from '~/components/ui/Badge.vue'
 
-// 禁用 SSR，避免 hydration 警告
+// 图片状态接口
+interface ImageState {
+  templateId: string
+  config: Record<string, any>
+}
+
+// 处理结果缓存接口
+interface ProcessedResult {
+  canvas: HTMLCanvasElement
+  blob: Blob
+}
+
+// 禁用 SSR
 definePageMeta({
   ssr: false
 })
@@ -175,7 +243,7 @@ onMounted(() => {
 })
 
 // 模板管理
-const { templates, selectedTemplate, selectTemplate } = useTemplates()
+const { templates } = useTemplates()
 
 // 上传的文件
 const uploadedFiles = ref<File[]>([])
@@ -183,45 +251,285 @@ const uploadedFiles = ref<File[]>([])
 // 当前预览索引
 const currentIndex = ref(0)
 
-// 预览模式：'grid' | 'carousel'
-const previewMode = ref<'grid' | 'carousel'>('grid')
+// 每张图片的独立状态（模板 + 配置）
+const imageStates = ref<Map<File, ImageState>>(new Map())
 
-// 用户配置
-const userConfig = ref({})
+// 处理结果缓存（用于下载时避免重复处理）
+const processedCache = ref<Map<File, ProcessedResult>>(new Map())
+
+// 预览URL缓存（用于快速切换显示）
+const previewUrls = ref<Map<File, string>>(new Map())
+
+// 当前图片的模板ID（用于UI绑定）
+const currentTemplateId = ref('noProcess')
+
+// 当前图片的配置（用于UI绑定）
+const currentConfig = ref<Record<string, any>>({})
+
+// 根据ID获取模板对象
+const currentTemplate = computed<TemplateConfig>(() => {
+  return templates.value.find(t => t.id === currentTemplateId.value) || templates.value[0]
+})
 
 // 批量处理
 const { processBatch, processing, progress } = useBatchProcessor()
+const { processImage } = useImageProcessor()
 
-// 处理上传
+// 下载进度（独立于批量处理进度）
+const downloading = ref(false)
+const downloadProgress = ref({ current: 0, total: 0, percent: 0 })
+
+// 处理上传 - 为每张图片初始化默认状态
 function handleUpload(files: File[]) {
   uploadedFiles.value = files
   currentIndex.value = 0
+
+  // 清除旧的状态和缓存
+  imageStates.value.clear()
+  processedCache.value.clear()
+  previewUrls.value.clear()
+
+  // 为所有新图片初始化默认状态
+  files.forEach(file => {
+    imageStates.value.set(file, {
+      templateId: 'noProcess',
+      config: {}
+    })
+  })
+
+  // 加载第一张图片的状态
+  loadCurrentImageState()
+}
+
+// 加载当前图片的状态到UI
+function loadCurrentImageState() {
+  const currentFile = uploadedFiles.value[currentIndex.value]
+  if (!currentFile) return
+
+  const state = imageStates.value.get(currentFile)
+  if (state) {
+    // 只有当状态真的不同时才更新（避免触发不必要的 watch）
+    if (currentTemplateId.value !== state.templateId) {
+      currentTemplateId.value = state.templateId
+    }
+    if (JSON.stringify(currentConfig.value) !== JSON.stringify(state.config)) {
+      currentConfig.value = { ...state.config }
+    }
+  }
+}
+
+// 保存当前UI状态到当前图片
+function saveCurrentImageState() {
+  const currentFile = uploadedFiles.value[currentIndex.value]
+  if (!currentFile) return
+
+  imageStates.value.set(currentFile, {
+    templateId: currentTemplateId.value,
+    config: { ...currentConfig.value }
+  })
+}
+
+// 监听索引变化，切换图片时加载该图片的状态
+watch(currentIndex, () => {
+  loadCurrentImageState()
+})
+
+// 监听模板选择变化，保存到当前图片状态
+watch(currentTemplateId, () => {
+  const currentFile = uploadedFiles.value[currentIndex.value]
+  if (currentFile) {
+    // 模板变化，清除该图片的缓存
+    processedCache.value.delete(currentFile)
+    previewUrls.value.delete(currentFile)
+  }
+  saveCurrentImageState()
+})
+
+// 监听配置变化，保存到当前图片状态
+watch(currentConfig, () => {
+  const currentFile = uploadedFiles.value[currentIndex.value]
+  if (currentFile) {
+    // 配置变化，清除该图片的缓存
+    processedCache.value.delete(currentFile)
+    previewUrls.value.delete(currentFile)
+  }
+  saveCurrentImageState()
+}, { deep: true })
+
+// 重置应用
+function resetApp() {
+  if (confirm('确定要重新开始吗？当前的编辑将丢失。')) {
+    uploadedFiles.value = []
+    currentIndex.value = 0
+    imageStates.value.clear()
+    processedCache.value.clear()
+    previewUrls.value.clear()
+    currentTemplateId.value = 'noProcess'
+    currentConfig.value = {}
+  }
 }
 
 // 处理模板选择
 function handleTemplateSelect(id: string) {
-  selectTemplate(id)
+  currentTemplateId.value = id
+  // 切换模板时重置配置
+  currentConfig.value = {}
 }
 
-// 处理图片
-async function handleProcess() {
-  if (uploadedFiles.value.length === 0) return
+// 应用到所有图片 - 将当前模板和配置应用到所有图片并立即批量处理
+async function applyToAll() {
+  if (!confirm(`确定要将当前模板应用到全部 ${uploadedFiles.value.length} 张图片吗？`)) {
+    return
+  }
 
+  // 1. 将当前状态应用到所有图片
+  uploadedFiles.value.forEach(file => {
+    imageStates.value.set(file, {
+      templateId: currentTemplateId.value,
+      config: { ...currentConfig.value }
+    })
+  })
+
+  // 2. 如果是"不处理"模板，清除所有处理缓存
+  if (currentTemplateId.value === 'noProcess') {
+    processedCache.value.clear()
+    previewUrls.value.clear()
+    alert('已应用到所有图片！')
+    return
+  }
+
+  // 3. 批量处理所有图片并缓存结果
   try {
-    // 批量处理
     const results = await processBatch(
       uploadedFiles.value,
-      selectedTemplate.value.processors,
-      userConfig.value
+      currentTemplate.value.processors,
+      currentConfig.value
     )
 
-    // 下载结果
-    await downloadImages(results)
+    // 缓存处理结果和预览URL
+    results.forEach(result => {
+      processedCache.value.set(result.file, {
+        canvas: result.canvas,
+        blob: result.blob
+      })
 
-    alert(`成功处理 ${results.length} 张图片！`)
+      // 生成预览 URL（Data URL）
+      const previewUrl = result.canvas.toDataURL('image/jpeg', 0.8)
+      previewUrls.value.set(result.file, previewUrl)
+    })
+
+    alert('处理完成！所有图片已应用模板。')
   } catch (error) {
     console.error('Processing error:', error)
     alert('处理失败，请查看控制台')
+  }
+}
+
+// 应用到部分图片
+function applyToSelected() {
+  // TODO: 打开图片选择弹窗
+  alert('图片选择功能开发中...')
+}
+
+// 下载当前图片
+async function downloadCurrent() {
+  try {
+    const currentFile = uploadedFiles.value[currentIndex.value]
+    const state = imageStates.value.get(currentFile)
+    if (!state) return
+
+    let blob: Blob
+
+    // 优先使用缓存
+    const cached = processedCache.value.get(currentFile)
+    if (cached) {
+      blob = cached.blob
+    } else {
+      // 没有缓存则重新处理
+      const template = templates.value.find(t => t.id === state.templateId)
+      if (!template) return
+
+      const canvas = await processImage(
+        currentFile,
+        template.processors,
+        state.config
+      )
+      blob = await canvasToBlob(canvas)
+
+      // 缓存结果
+      processedCache.value.set(currentFile, { canvas, blob })
+    }
+
+    await downloadImages([{
+      blob,
+      name: currentFile.name
+    }])
+
+    alert('下载成功！')
+  } catch (error) {
+    console.error('Download error:', error)
+    alert('下载失败')
+  }
+}
+
+// 下载全部图片
+async function downloadAll() {
+  if (uploadedFiles.value.length === 0) return
+
+  try {
+    downloading.value = true
+    downloadProgress.value = { current: 0, total: uploadedFiles.value.length, percent: 0 }
+    const results = []
+
+    for (let i = 0; i < uploadedFiles.value.length; i++) {
+      const file = uploadedFiles.value[i]
+      const state = imageStates.value.get(file)
+      if (!state) continue
+
+      let blob: Blob
+
+      // 如果是"不处理"，使用原图
+      if (state.templateId === 'noProcess') {
+        blob = new Blob([file], { type: file.type })
+      } else {
+        // 优先使用缓存
+        const cached = processedCache.value.get(file)
+        if (cached) {
+          blob = cached.blob
+        } else {
+          // 没有缓存则重新处理
+          const template = templates.value.find(t => t.id === state.templateId)
+          if (!template) continue
+
+          const canvas = await processImage(
+            file,
+            template.processors,
+            state.config
+          )
+          blob = await canvasToBlob(canvas)
+
+          // 缓存结果
+          processedCache.value.set(file, { canvas, blob })
+        }
+      }
+
+      results.push({ blob, name: file.name })
+
+      // 更新进度
+      downloadProgress.value = {
+        current: i + 1,
+        total: uploadedFiles.value.length,
+        percent: Math.round(((i + 1) / uploadedFiles.value.length) * 100)
+      }
+    }
+
+    await downloadImages(results)
+    alert('下载成功！')
+  } catch (error) {
+    console.error('Download error:', error)
+    alert('下载失败')
+  } finally {
+    downloading.value = false
   }
 }
 </script>
@@ -230,20 +538,5 @@ async function handleProcess() {
 .glass-effect {
   background: rgba(255, 255, 255, 0.9);
   backdrop-filter: blur(10px);
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.animate-fade-in {
-  animation: fadeIn 0.3s ease-out;
 }
 </style>

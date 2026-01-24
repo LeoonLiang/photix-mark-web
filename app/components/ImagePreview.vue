@@ -10,6 +10,12 @@
           </svg>
           处理中
         </Badge>
+        <Badge v-if="previewMode === 'grid'" variant="outline" class="text-xs">
+          原图浏览
+        </Badge>
+        <Badge v-else variant="default" class="text-xs">
+          实时预览
+        </Badge>
       </div>
       <div class="flex gap-2">
         <Button
@@ -20,7 +26,7 @@
           <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
           </svg>
-          批量预览
+          批量浏览
         </Button>
         <Button
           @click="$emit('update:preview-mode', 'carousel')"
@@ -31,7 +37,7 @@
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
           </svg>
-          轮播预览
+          效果预览
         </Button>
       </div>
     </div>
@@ -152,15 +158,32 @@ const emit = defineEmits<{
 }>()
 
 // 预览 URL 缓存
-const previewUrls = ref<Map<File, string>>(new Map())
+// 网格模式：原图缓存
+// 轮播模式：处理后的图片缓存
+const originalUrls = ref<Map<File, string>>(new Map())
+const processedUrls = ref<Map<File, string>>(new Map())
 const isProcessing = ref(false)
 const { generatePreview, clearCache } = useWatermarkPreview()
 
-// 生成预览 URL（带水印）
-async function generatePreviewUrl(file: File): Promise<string> {
+// 生成原图预览 URL（不处理）
+function generateOriginalUrl(file: File): string {
+  if (!originalUrls.value.has(file)) {
+    const url = URL.createObjectURL(file)
+    originalUrls.value.set(file, url)
+  }
+  return originalUrls.value.get(file)!
+}
+
+// 生成处理后的预览 URL（带水印）
+async function generateProcessedUrl(file: File): Promise<string> {
+  // 如果已有缓存且配置未改变，直接返回
+  if (processedUrls.value.has(file)) {
+    return processedUrls.value.get(file)!
+  }
+
   // 如果没有处理器配置，返回原图
   if (!props.processors || props.processors.length === 0) {
-    return URL.createObjectURL(file)
+    return generateOriginalUrl(file)
   }
 
   try {
@@ -170,54 +193,102 @@ async function generatePreviewUrl(file: File): Promise<string> {
       props.processors,
       props.userConfig || {}
     )
+    processedUrls.value.set(file, previewUrl)
     return previewUrl
   } catch (error) {
     console.error('Failed to generate preview:', error)
-    return URL.createObjectURL(file)
+    return generateOriginalUrl(file)
   } finally {
     isProcessing.value = false
   }
 }
 
-// 防抖的预览更新函数
-const updatePreviews = useDebounceFn(async () => {
-  isProcessing.value = true
-
-  for (const file of props.files) {
-    const url = await generatePreviewUrl(file)
-    previewUrls.value.set(file, url)
+// 更新当前图片的预览（仅在轮播模式）
+const updateCurrentPreview = useDebounceFn(async () => {
+  if (props.previewMode !== 'carousel' || props.files.length === 0) {
+    return
   }
 
-  isProcessing.value = false
+  const currentFile = props.files[props.currentIndex]
+  if (currentFile) {
+    await generateProcessedUrl(currentFile)
+  }
 }, 300)
 
 // 监听文件列表变化
-watch(() => props.files, async (newFiles) => {
+watch(() => props.files, (newFiles, oldFiles) => {
   // 清理不再使用的预览
   const currentFiles = new Set(newFiles)
-  previewUrls.value.forEach((_, file) => {
+
+  // 清理原图缓存
+  originalUrls.value.forEach((url, file) => {
     if (!currentFiles.has(file)) {
-      const url = previewUrls.value.get(file)
-      if (url && url.startsWith('blob:')) {
-        URL.revokeObjectURL(url)
-      }
-      previewUrls.value.delete(file)
+      URL.revokeObjectURL(url)
+      originalUrls.value.delete(file)
     }
   })
 
-  // 为新文件生成预览
-  await updatePreviews()
+  // 清理处理后的缓存
+  processedUrls.value.forEach((url, file) => {
+    if (!currentFiles.has(file)) {
+      if (url.startsWith('blob:')) {
+        URL.revokeObjectURL(url)
+      }
+      processedUrls.value.delete(file)
+    }
+  })
+
+  // 为新文件生成原图预览
+  for (const file of newFiles) {
+    generateOriginalUrl(file)
+  }
+
+  // 如果在轮播模式，生成当前图片的处理预览
+  if (props.previewMode === 'carousel' && newFiles.length > 0) {
+    updateCurrentPreview()
+  }
 }, { immediate: true })
 
-// 监听处理器或配置变化，重新生成预览
+// 监听处理器或配置变化，只更新当前图片（轮播模式）
 watch([() => props.processors, () => props.userConfig], () => {
-  // 清除所有缓存
-  previewUrls.value.clear()
+  // 清除处理后的缓存
+  processedUrls.value.forEach(url => {
+    if (url.startsWith('blob:')) {
+      URL.revokeObjectURL(url)
+    }
+  })
+  processedUrls.value.clear()
   clearCache()
 
-  // 重新生成预览
-  updatePreviews()
+  // 只更新当前轮播的图片
+  updateCurrentPreview()
 }, { deep: true })
+
+// 监听当前索引变化（轮播模式切换图片）
+watch(() => props.currentIndex, () => {
+  if (props.previewMode === 'carousel') {
+    updateCurrentPreview()
+  }
+})
+
+// 监听预览模式变化
+watch(() => props.previewMode, (newMode) => {
+  if (newMode === 'carousel') {
+    // 切换到轮播模式，生成当前图片预览
+    updateCurrentPreview()
+  }
+})
+
+// 计算当前使用的预览 URL
+const previewUrls = computed(() => {
+  if (props.previewMode === 'grid') {
+    // 网格模式：返回原图
+    return originalUrls.value
+  } else {
+    // 轮播模式：返回处理后的图片
+    return processedUrls.value
+  }
+})
 
 function selectImage(index: number) {
   emit('update:current-index', index)
@@ -238,7 +309,10 @@ function nextImage() {
 
 // 清理 URL
 onUnmounted(() => {
-  previewUrls.value.forEach(url => {
+  originalUrls.value.forEach(url => {
+    URL.revokeObjectURL(url)
+  })
+  processedUrls.value.forEach(url => {
     if (url.startsWith('blob:')) {
       URL.revokeObjectURL(url)
     }
