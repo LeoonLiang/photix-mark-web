@@ -1,51 +1,57 @@
 <template>
   <!-- 未上传状态：欢迎页 -->
-  <div v-if="uploadedFiles.length === 0" class="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center p-4">
-    <div class="max-w-2xl w-full">
+  <div v-if="uploadedFiles.length === 0" class="relative min-h-screen bg-background flex items-center justify-center p-4 overflow-hidden">
+    <!-- Background Image -->
+    <div class="absolute inset-0 z-0">
+      <img src="/demo.jpg" alt="Showcase" class="w-full h-full object-cover blur-sm opacity-20">
+      <div class="absolute inset-0 bg-background/50"></div>
+    </div>
+    
+    <div class="relative z-10 max-w-2xl w-full bg-background/50 backdrop-blur-md p-8 rounded-2xl border border-border animate-fade-in-up">
       <!-- Logo & Title -->
       <div class="text-center mb-8">
-        <div class="w-20 h-20 bg-gradient-to-br from-primary to-blue-600 rounded-2xl flex items-center justify-center text-white mx-auto mb-4 shadow-2xl">
+        <div class="w-20 h-20 bg-gradient-to-br from-primary to-amber-600 rounded-2xl flex items-center justify-center text-white mx-auto mb-4 shadow-2xl shadow-primary/20">
           <svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
           </svg>
         </div>
-        <h1 class="text-4xl font-bold text-slate-800 mb-2">Photix Mark Web</h1>
-        <p class="text-lg text-slate-500">纯前端图片水印批量处理工具</p>
+        <h1 class="text-5xl font-bold text-foreground mb-2">PhotoSign</h1>
+        <p class="text-lg text-muted-foreground">为你的摄影作品，优雅地附上专属水印与参数。</p>
       </div>
 
       <!-- Features -->
       <div class="grid grid-cols-3 gap-4 mb-8">
         <div class="text-center p-4">
-          <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mx-auto mb-2">
-            <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div class="w-12 h-12 bg-card/80 rounded-lg flex items-center justify-center mx-auto mb-2">
+            <svg class="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
             </svg>
           </div>
-          <p class="text-sm text-slate-600 font-medium">隐私安全</p>
-          <p class="text-xs text-slate-400">本地处理</p>
+          <p class="text-sm text-foreground font-medium">隐私安全</p>
+          <p class="text-xs text-muted-foreground">本地处理</p>
         </div>
         <div class="text-center p-4">
-          <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mx-auto mb-2">
-            <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div class="w-12 h-12 bg-card/80 rounded-lg flex items-center justify-center mx-auto mb-2">
+            <svg class="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
             </svg>
           </div>
-          <p class="text-sm text-slate-600 font-medium">批量处理</p>
-          <p class="text-xs text-slate-400">一键添加水印</p>
+          <p class="text-sm text-foreground font-medium">批量处理</p>
+          <p class="text-xs text-muted-foreground">一键添加水印</p>
         </div>
         <div class="text-center p-4">
-          <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mx-auto mb-2">
-            <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div class="w-12 h-12 bg-card/80 rounded-lg flex items-center justify-center mx-auto mb-2">
+            <svg class="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
             </svg>
           </div>
-          <p class="text-sm text-slate-600 font-medium">实时预览</p>
-          <p class="text-xs text-slate-400">即时查看效果</p>
+          <p class="text-sm text-foreground font-medium">实时预览</p>
+          <p class="text-xs text-muted-foreground">即时查看效果</p>
         </div>
       </div>
 
       <!-- Upload Card -->
-      <Card class="bg-white/90 backdrop-blur shadow-2xl">
+      <Card class="bg-card/80 backdrop-blur-xl shadow-2xl shadow-primary/10">
         <CardContent class="p-8">
           <ImageUploader @upload="handleUpload" />
         </CardContent>
@@ -54,18 +60,18 @@
   </div>
 
   <!-- 已上传状态：编辑器 -->
-  <div v-else class="h-screen flex flex-col bg-gradient-to-br from-slate-50 to-slate-100 overflow-hidden">
+  <div v-else class="h-screen flex flex-col bg-background overflow-hidden">
     <!-- Header - 桌面端 -->
-    <header class="glass-effect border-b border-slate-200/50 h-16 flex-shrink-0 items-center px-6 shadow-sm hidden lg:flex">
+    <header class="bg-background/80 backdrop-blur-xl border-b border-border h-16 flex-shrink-0 items-center px-6 shadow-sm hidden lg:flex">
       <div class="flex items-center gap-3">
-        <div class="w-10 h-10 bg-gradient-to-br from-primary to-blue-600 rounded-xl flex items-center justify-center text-white font-bold shadow-lg">
+        <div class="w-10 h-10 bg-gradient-to-br from-primary to-amber-600 rounded-xl flex items-center justify-center text-white font-bold shadow-lg">
           <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
           </svg>
         </div>
         <div>
-          <h1 class="font-bold text-lg text-slate-800 tracking-tight">Photix Mark Web</h1>
-          <p class="text-xs text-slate-400">{{ uploadedFiles.length }} 张图片</p>
+          <h1 class="font-bold text-lg text-foreground tracking-tight">PhotoSign</h1>
+          <p class="text-xs text-muted-foreground">{{ uploadedFiles.length }} 张图片</p>
         </div>
       </div>
 
@@ -80,27 +86,34 @@
     </header>
 
     <!-- Mobile Header - 移动端简化版 -->
-    <header class="glass-effect border-b border-slate-200/50 h-14 flex-shrink-0 flex items-center px-4 shadow-sm lg:hidden">
-      <div class="flex items-center gap-2">
-        <div class="w-8 h-8 bg-gradient-to-br from-primary to-blue-600 rounded-lg flex items-center justify-center text-white">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-          </svg>
-        </div>
-        <div>
-          <h1 class="font-bold text-base text-slate-800">Photix Mark</h1>
-          <p class="text-xs text-slate-400">{{ uploadedFiles.length }} 张图片</p>
-        </div>
-      </div>
+    <header class="bg-background/95 backdrop-blur-xl border-b border-border h-12 flex-shrink-0 flex items-center justify-between px-3 shadow-sm lg:hidden">
+      <!-- 返回按钮 -->
+      <button @click="resetApp" class="p-2 hover:bg-muted rounded-lg transition-colors">
+        <svg class="w-5 h-5 text-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+        </svg>
+      </button>
 
-      <div class="ml-auto">
-        <Button @click="resetApp" variant="outline" size="sm" class="text-xs px-2 py-1">
-          <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
-          </svg>
-          重新上传
-        </Button>
-      </div>
+      <!-- 应用到全部按钮 -->
+      <Button
+        @click="applyToAll"
+        :disabled="processing || currentTemplateId === 'noProcess'"
+        variant="secondary"
+        size="sm"
+        class="text-xs px-3 py-1.5 rounded-full"
+      >
+        应用到全部
+      </Button>
+
+      <!-- 保存按钮 -->
+      <Button
+        @click="downloadAll"
+        variant="ghost"
+        size="sm"
+        class="text-xs px-3 py-1.5 font-medium"
+      >
+        保存
+      </Button>
     </header>
 
     <!-- Main Editor - 桌面端 -->
@@ -108,7 +121,7 @@
       <div class="h-full grid grid-cols-12" style="gap: 16px;">
         <!-- Left: Image Carousel (70%) -->
         <div class="col-span-12 lg:col-span-8" style="min-height: 0;">
-          <div class="h-full bg-white/80 backdrop-blur shadow-lg rounded-lg" style="overflow: hidden; padding: 12px;">
+          <div class="h-full bg-card/80 backdrop-blur-xl shadow-lg shadow-primary/5 rounded-lg" style="overflow: hidden; padding: 12px;">
             <ClientOnly>
               <ImageCarousel
                 :files="uploadedFiles"
@@ -126,8 +139,8 @@
         <div class="col-span-12 lg:col-span-4" style="min-height: 0; overflow: hidden;">
           <div class="h-full overflow-y-auto space-y-4" style="padding-right: 4px;">
           <!-- Template Selection -->
-          <Card class="bg-white/80 backdrop-blur shadow-lg">
-            <CardHeader class="border-b bg-gradient-to-r from-slate-50 to-white py-3">
+          <Card class="bg-card/80 backdrop-blur-xl shadow-lg shadow-primary/5">
+            <CardHeader class="border-b bg-black/10 py-3">
               <CardTitle class="text-base">模板选择</CardTitle>
             </CardHeader>
             <CardContent>
@@ -140,8 +153,8 @@
           </Card>
 
           <!-- Template Configuration -->
-          <Card v-if="currentTemplateId !== 'noProcess'" class="bg-white/80 backdrop-blur shadow-lg">
-            <CardHeader class="border-b bg-gradient-to-r from-slate-50 to-white py-3">
+          <Card v-if="currentTemplateId !== 'noProcess'" class="bg-card/80 backdrop-blur-xl shadow-lg shadow-primary/5">
+            <CardHeader class="border-b bg-black/10 py-3">
               <CardTitle class="text-base">模板配置</CardTitle>
             </CardHeader>
             <CardContent>
@@ -212,10 +225,10 @@
     </main>
 
     <!-- Mobile Main - 移动端布局 -->
-    <main class="flex-1 lg:hidden flex flex-col relative" style="min-height: 0; overflow: hidden;">
+    <main class="flex-1 lg:hidden flex flex-col relative bg-muted/30" style="min-height: 0; overflow: hidden;">
       <!-- Preview Area -->
-      <div class="flex-1" style="min-height: 0; padding: 8px;">
-        <div class="h-full bg-white/80 backdrop-blur shadow-lg rounded-lg" style="overflow: hidden; padding: 8px;">
+      <div class="flex-1" style="min-height: 0; padding: 4px;">
+        <div class="h-full bg-card/90 backdrop-blur-xl shadow-lg rounded-lg" style="overflow: hidden; padding: 6px;">
           <ClientOnly>
             <ImageCarousel
               :files="uploadedFiles"
@@ -230,36 +243,11 @@
       </div>
 
       <!-- Bottom Control Tabs -->
-      <div class="flex-shrink-0 bg-white/95 backdrop-blur border-t border-slate-200/50 shadow-2xl">
-        <!-- Tab Headers -->
-        <div class="flex border-b border-slate-200/50">
-          <button
-            v-for="tab in mobileTabs"
-            :key="tab.id"
-            @click="currentMobileTab = tab.id"
-            :class="[
-              'flex-1 py-2.5 px-2 text-sm font-medium transition-all relative',
-              currentMobileTab === tab.id
-                ? 'text-primary'
-                : 'text-slate-500 hover:text-slate-700'
-            ]"
-          >
-            <div class="flex flex-col items-center gap-0.5">
-              <component :is="tab.icon" class="w-4 h-4" />
-              <span class="text-xs">{{ tab.label }}</span>
-            </div>
-            <div
-              v-if="currentMobileTab === tab.id"
-              class="absolute bottom-0 left-0 right-0 h-0.5 bg-primary"
-            ></div>
-          </button>
-        </div>
-
+      <div class="flex-shrink-0 bg-background/95 backdrop-blur-xl border-t border-border">
         <!-- Tab Content -->
-        <div class="overflow-y-auto" style="max-height: 40vh;">
-          <!-- 模板配置 Tab -->
-          <div v-show="currentMobileTab === 'template'" class="p-3 space-y-3">
-            <!-- Template Selection -->
+        <div class="overflow-y-auto" style="max-height: 50vh;">
+          <!-- 模板选择 Tab -->
+          <div v-show="currentMobileTab === 'template'" class="px-3 pt-2 pb-3 space-y-2">
             <TemplateSelector
               :templates="templates"
               :selected-id="currentTemplateId"
@@ -325,6 +313,26 @@
               </svg>
               导出全部图片
             </Button>
+          </div>
+        </div>
+
+        <!-- Bottom Icon Navigation -->
+        <div class="border-t border-border bg-background">
+          <div class="flex items-center justify-around px-2 py-2 safe-area-inset-bottom">
+            <button
+              v-for="tab in mobileTabs"
+              :key="tab.id"
+              @click="currentMobileTab = tab.id"
+              :class="[
+                'flex flex-col items-center justify-center gap-1 px-4 py-1.5 rounded-lg transition-all min-w-[64px]',
+                currentMobileTab === tab.id
+                  ? 'text-primary'
+                  : 'text-muted-foreground'
+              ]"
+            >
+              <component :is="tab.icon" class="w-5 h-5" />
+              <span class="text-[10px] font-medium">{{ tab.label }}</span>
+            </button>
           </div>
         </div>
       </div>
@@ -774,8 +782,18 @@ async function downloadAll() {
 </script>
 
 <style scoped>
-.glass-effect {
-  background: rgba(255, 255, 255, 0.9);
-  backdrop-filter: blur(10px);
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.animate-fade-in-up {
+  animation: fade-in-up 0.5s ease-out forwards;
 }
 </style>
+

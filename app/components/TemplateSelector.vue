@@ -1,24 +1,24 @@
 <template>
-  <div class="overflow-x-auto -mx-1 px-1">
-    <div class="flex gap-2 pb-2 pt-2">
+  <div>
+    <!-- 桌面端：网格布局 -->
+    <div class="hidden lg:grid grid-cols-3 gap-3 py-2">
       <button
         v-for="template in templates"
         :key="template.id"
         @click="$emit('select', template.id)"
         :class="[
-          'flex-shrink-0 rounded-lg transition-all duration-200 overflow-hidden',
+          'rounded-lg transition-all duration-200 overflow-hidden w-full border-2',
           selectedId === template.id
-            ? 'ring-2 ring-primary ring-offset-2 shadow-lg'
-            : 'hover:ring-2 hover:ring-primary/30',
-          template.id === 'noProcess' ? 'w-[80px]' : 'w-[80px] lg:w-[120px]'
+            ? 'border-primary shadow-lg'
+            : 'border-transparent hover:border-primary/50',
         ]"
       >
         <!-- 图片预览 -->
-        <div v-if="getTemplateImage(template.id)" class="relative bg-gray-100 leading-[0]">
+        <div v-if="getTemplateImage(template.id)" class="relative bg-secondary leading-[0]">
           <img
             :src="getTemplateImage(template.id)"
             :alt="template.name"
-            class="w-full h-auto block"
+            class="w-full h-auto block aspect-[3/2] object-cover"
           />
           <!-- 选中指示器 -->
           <div
@@ -34,13 +34,65 @@
         </div>
 
         <!-- 不处理选项 -->
-        <div v-else class="bg-gray-50 flex flex-col items-center justify-center py-2 px-2 min-h-[55px]">
-          <svg class="w-6 h-6 lg:w-8 lg:h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div v-else class="bg-secondary flex flex-col items-center justify-center aspect-[3/2]">
+          <svg class="w-8 h-8 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
           </svg>
-          <span class="text-[10px] lg:text-xs text-gray-600 font-medium text-center mt-1 hidden lg:block">不处理</span>
+        </div>
+
+        <!-- 模板名称 -->
+        <div class="text-center text-xs py-1.5 bg-card/50">
+          <span class="font-medium text-muted-foreground">{{ template.name }}</span>
         </div>
       </button>
+    </div>
+
+    <!-- 移动端：横向滚动小卡片 -->
+    <div class="lg:hidden overflow-x-auto scrollbar-hide smooth-scroll py-2">
+      <div class="flex gap-2 px-0.5">
+        <button
+          v-for="template in templates"
+          :key="template.id"
+          @click="$emit('select', template.id)"
+          :class="[
+            'rounded-lg transition-all duration-200 overflow-hidden flex-shrink-0',
+            selectedId === template.id
+              ? 'ring-2 ring-primary shadow-md scale-105'
+              : 'opacity-70',
+          ]"
+          style="width: 90px;"
+        >
+          <!-- 图片预览 -->
+          <div v-if="getTemplateImage(template.id)" class="relative bg-secondary leading-[0]">
+            <img
+              :src="getTemplateImage(template.id)"
+              :alt="template.name"
+              class="w-full h-auto block aspect-[3/2] object-cover"
+            />
+            <!-- 选中指示器 -->
+            <div
+              v-if="selectedId === template.id"
+              class="absolute top-1 right-1 w-4 h-4 bg-primary rounded-full flex items-center justify-center shadow-md"
+            >
+              <svg class="w-2.5 h-2.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
+          </div>
+
+          <!-- 不处理选项 -->
+          <div v-else class="bg-secondary flex flex-col items-center justify-center aspect-[3/2]">
+            <svg class="w-6 h-6 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+            </svg>
+          </div>
+
+          <!-- 模板名称 -->
+          <div class="text-center text-[10px] py-1 bg-card/50">
+            <span class="font-medium text-muted-foreground">{{ template.name }}</span>
+          </div>
+        </button>
+      </div>
     </div>
   </div>
 </template>

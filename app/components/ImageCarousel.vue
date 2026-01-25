@@ -23,33 +23,27 @@
       </div>
     </div>
 
-    <!-- Thumbnails Carousel - 固定高度缩小 -->
-    <div v-if="files.length > 1" class="border-t" style="height: 80px; flex-shrink: 0; padding-top: 8px;">
-      <div class="flex items-center gap-2 h-full">
-        <!-- Previous Button -->
-        <button
-          @click="prevImage"
-          :disabled="currentIndex === 0"
-          class="p-1.5 rounded-lg hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed transition-all flex-shrink-0"
-        >
-          <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-          </svg>
-        </button>
-
-        <!-- Thumbnail List -->
-        <div class="flex-1 overflow-x-auto h-full">
-          <div class="flex gap-2 h-full">
+    <!-- Thumbnails Carousel - 优化样式 -->
+    <div v-if="files.length > 1" class="border-t border-border/50 bg-background/30" style="height: 88px; flex-shrink: 0; padding: 8px 0;">
+      <div class="flex items-center gap-1.5 h-full px-2">
+        <!-- Thumbnail List - 无箭头，纯滚动 -->
+        <div ref="thumbnailContainer" class="flex-1 overflow-x-auto h-full scrollbar-hide smooth-scroll">
+          <div class="flex gap-2 h-full pb-1">
             <div
               v-for="(file, index) in files"
               :key="index"
+              :data-thumbnail="index"
               @click="selectImage(index)"
               :class="[
-                'relative h-14 w-14 rounded-lg overflow-hidden cursor-pointer border-2 transition-all flex-shrink-0',
+                'relative rounded-lg overflow-hidden cursor-pointer flex-shrink-0 transition-all duration-200',
                 currentIndex === index
-                  ? 'border-primary ring-2 ring-primary ring-offset-2'
-                  : 'border-transparent hover:border-gray-300'
+                  ? 'ring-2 ring-primary scale-105'
+                  : 'opacity-60 hover:opacity-100'
               ]"
+              :style="{
+                width: '56px',
+                height: '72px'
+              }"
             >
               <img
                 v-if="getThumbnailUrl(file)"
@@ -57,36 +51,21 @@
                 :alt="file.name"
                 class="w-full h-full object-cover"
               />
-              <div v-else class="w-full h-full bg-gray-100 flex items-center justify-center">
-                <svg class="animate-spin w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div v-else class="w-full h-full bg-muted flex items-center justify-center">
+                <svg class="animate-spin w-4 h-4 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                 </svg>
-              </div>
-              <!-- Current indicator -->
-              <div v-if="currentIndex === index" class="absolute top-0.5 right-0.5 bg-primary text-white text-[10px] px-1 py-0.5 rounded">
-                当前
               </div>
             </div>
           </div>
         </div>
-
-        <!-- Next Button -->
-        <button
-          @click="nextImage"
-          :disabled="currentIndex === files.length - 1"
-          class="p-1.5 rounded-lg hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed transition-all flex-shrink-0"
-        >
-          <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-          </svg>
-        </button>
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, watch, onUnmounted, computed } from 'vue'
+import { ref, watch, onUnmounted, computed, nextTick } from 'vue'
 import { useDebounceFn } from '@vueuse/core'
 import { useWatermarkPreview } from '~/composables/useWatermarkPreview'
 
@@ -102,10 +81,35 @@ const emit = defineEmits<{
   'update:current-index': [index: number]
 }>()
 
+// 缩略图容器引用
+const thumbnailContainer = ref<HTMLElement | null>(null)
+
 // 预览缓存
 const originalUrls = ref<Map<File, string>>(new Map())
 const processedUrls = ref<Map<File, string>>(new Map())
 const { generatePreview, clearCache } = useWatermarkPreview()
+
+// 滚动到当前缩略图
+function scrollToCurrentThumbnail() {
+  nextTick(() => {
+    if (!thumbnailContainer.value) return
+    const container = thumbnailContainer.value
+    const thumbnails = container.querySelectorAll('[data-thumbnail]')
+    const currentThumbnail = thumbnails[props.currentIndex] as HTMLElement
+
+    if (currentThumbnail) {
+      const containerWidth = container.offsetWidth
+      const thumbnailLeft = currentThumbnail.offsetLeft
+      const thumbnailWidth = currentThumbnail.offsetWidth
+      const scrollPosition = thumbnailLeft - (containerWidth / 2) + (thumbnailWidth / 2)
+
+      container.scrollTo({
+        left: scrollPosition,
+        behavior: 'smooth'
+      })
+    }
+  })
+}
 
 // 为所有文件生成原图缩略图
 function generateThumbnails() {
@@ -176,17 +180,20 @@ function getThumbnailUrl(file: File): string | null {
 // 切换图片
 function selectImage(index: number) {
   emit('update:current-index', index)
+  scrollToCurrentThumbnail()
 }
 
 function prevImage() {
   if (props.currentIndex > 0) {
     emit('update:current-index', props.currentIndex - 1)
+    scrollToCurrentThumbnail()
   }
 }
 
 function nextImage() {
   if (props.currentIndex < props.files.length - 1) {
     emit('update:current-index', props.currentIndex + 1)
+    scrollToCurrentThumbnail()
   }
 }
 
@@ -218,9 +225,10 @@ watch(() => props.files, (newFiles, oldFiles) => {
   updateCurrentPreview()
 }, { immediate: true })
 
-// 监听当前索引变化 - 切换图片时生成预览
+// 监听当前索引变化 - 切换图片时生成预览并滚动
 watch(() => props.currentIndex, () => {
   updateCurrentPreview()
+  scrollToCurrentThumbnail()
 })
 
 // 监听配置变化 - 只清除当前图片的缓存

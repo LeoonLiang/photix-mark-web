@@ -11,11 +11,11 @@ export default defineNuxtConfig({
 
   app: {
     head: {
-      title: 'Photix Mark Web - 图片水印工具',
+      title: 'PhotoSign - 影签',
       meta: [
         { charset: 'utf-8' },
         { name: 'viewport', content: 'width=device-width, initial-scale=1' },
-        { name: 'description', content: '纯前端图片水印批量处理工具' }
+        { name: 'description', content: '为你的摄影作品，优雅地附上专属水印与参数。' }
       ]
     }
   }

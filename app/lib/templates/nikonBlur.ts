@@ -6,7 +6,7 @@ import type { TemplateConfig } from './types'
  */
 export const nikonBlur: TemplateConfig = {
   id: 'nikonBlur',
-  name: '尼康专用背景模糊',
+  name: '尼康风格',
   description: '尼康 Z 系列专用，红色 Z 字突出显示',
   preview: '/templates/nikon_blur.jpg',
 

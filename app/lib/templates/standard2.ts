@@ -6,7 +6,7 @@ import type { TemplateConfig } from './types'
  */
 export const standard2: TemplateConfig = {
   id: 'standard2',
-  name: '标准水印2',
+  name: '标准样式2',
   description: '带圆角和阴影效果的标准水印',
   preview: '/templates/standard2.jpg',
 
