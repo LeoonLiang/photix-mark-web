@@ -42,7 +42,7 @@ export const nikonBlur: TemplateConfig = {
           trim: true
         }
       ],
-      text_spacing: 0.02,  // min(vh(2), vw(2))
+      text_spacing: 0.005,  // min(vh(2), vw(2))
       height: 0.04  // vh(4)
     },
     {

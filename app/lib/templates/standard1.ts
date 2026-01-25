@@ -40,6 +40,8 @@ export const standard1: TemplateConfig = {
       },
       logoEnabled: true,
       right_logo: '{{Make|logo}}',
+      right_alignment: 'left',  // 右侧文字左对齐，保持 Logo 位置固定
+      logo_right_margin: 0.04,  // Logo 右侧边距 4%（默认 3%，增加到 4% 给长 logo 更多空间）
       delimiter_color: 'transparent',
       color: 'white',
       textColor: '#242424'

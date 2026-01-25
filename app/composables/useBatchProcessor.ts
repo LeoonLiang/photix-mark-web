@@ -20,12 +20,14 @@ export function useBatchProcessor() {
    * @param files 图片文件数组
    * @param processors 处理器步骤
    * @param userConfig 用户配置
+   * @param getFileConfig 可选函数，为每个文件生成特定配置（如自定义Logo）
    * @returns 处理结果数组
    */
   async function processBatch(
     files: File[],
     processors: ProcessorStep[],
-    userConfig?: Record<string, any>
+    userConfig?: Record<string, any>,
+    getFileConfig?: (file: File) => Record<string, any>
   ): Promise<Array<{ file: File; canvas: HTMLCanvasElement; blob: Blob; name: string }>> {
     processing.value = true
     progress.value = { current: 0, total: files.length, percent: 0 }
@@ -37,8 +39,12 @@ export function useBatchProcessor() {
       const file = files[i]
 
       try {
+        // 合并用户配置和文件特定配置
+        const fileSpecificConfig = getFileConfig ? getFileConfig(file) : {}
+        const finalConfig = { ...userConfig, ...fileSpecificConfig }
+
         // 处理图片
-        const canvas = await processImage(file, processors, userConfig)
+        const canvas = await processImage(file, processors, finalConfig)
 
         // 转换为 Blob
         const blob = await canvasToBlob(canvas, 'image/jpeg', 0.95)

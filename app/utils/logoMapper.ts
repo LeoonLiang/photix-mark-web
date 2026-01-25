@@ -24,7 +24,7 @@ const BRAND_LOGO_MAP: Record<string, string> = {
   'PENTAX': '/logos/pentax.png',
   'RICOH': '/logos/ricoh.png',
   'HASSELBLAD': '/logos/hasselblad.png',
-  'DJI': '/logos/DJI.jpg',
+  'DJI': '/logos/DJI.png',
   'APPLE': '/logos/apple.png',
   'Apple': '/logos/apple.png',
   'HUAWEI': '/logos/xmage.png'

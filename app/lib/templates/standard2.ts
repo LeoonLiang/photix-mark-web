@@ -18,7 +18,7 @@ export const standard2: TemplateConfig = {
     {
       processor_name: 'shadow',
       shadow_color: 'rgba(0,0,0,0.15)',  // 更淡的阴影
-      shadow_radius: 0.005  // 降低到 0.5%
+      shadow_radius: 0.006  // 白色边框
     },
     {
       processor_name: 'watermark',
@@ -47,13 +47,15 @@ export const standard2: TemplateConfig = {
       // Logo 和样式
       logoEnabled: true,
       right_logo: '{{Make|logo}}',
+      right_alignment: 'left',  // 右侧文字左对齐，保持 Logo 位置固定
+      logo_right_margin: 0.04,  // Logo 右侧边距 4%
       color: 'white',
       textColor: '#242424',
       delimiter_color: 'transparent'
     },
     {
       processor_name: 'margin',
-      bottom_margin: 0.02  // vh(2) = 图片高度的 2%
+      bottom_margin: 0.01  // 从 0.02 降低到 1%，减少底部白色边距
     }
   ],
 

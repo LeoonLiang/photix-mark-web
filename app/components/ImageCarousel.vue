@@ -75,6 +75,8 @@ const props = defineProps<{
   processors?: any[]
   userConfig?: Record<string, any>
   previewUrls?: Map<File, string>
+  customLogos?: Map<string, string>  // 自定义Logo配置
+  exifCache?: Map<File, Record<string, any>>  // EXIF缓存
 }>()
 
 const emit = defineEmits<{
@@ -142,10 +144,22 @@ const updateCurrentPreview = useDebounceFn(async () => {
   }
 
   try {
+    // 获取当前文件的品牌信息
+    const exif = props.exifCache?.get(currentFile)
+    const brand = exif?.Make?.trim()
+
+    // 构建包含自定义Logo的配置
+    const configWithLogos = {
+      ...props.userConfig || {},
+      customLogoUrl: brand && props.customLogos?.has(brand) ?
+        props.customLogos.get(brand) : undefined,
+      customDefaultLogoUrl: props.customLogos?.get('')
+    }
+
     const previewUrl = await generatePreview(
       currentFile,
       props.processors,
-      props.userConfig || {}
+      configWithLogos
     )
     processedUrls.value.set(currentFile, previewUrl)
   } catch (error) {
@@ -232,7 +246,7 @@ watch(() => props.currentIndex, () => {
 })
 
 // 监听配置变化 - 只清除当前图片的缓存
-watch([() => props.processors, () => props.userConfig], () => {
+watch([() => props.processors, () => props.userConfig, () => props.customLogos], () => {
   const currentFile = props.files[props.currentIndex]
   if (!currentFile) return
 

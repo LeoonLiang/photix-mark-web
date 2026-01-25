@@ -19,9 +19,6 @@ export class MultiRichTextProcessor extends ImageProcessor {
       return ctx
     }
 
-    console.log('[MultiRichTextProcessor] Processing with config:', config)
-    console.log('[MultiRichTextProcessor] EXIF data:', exif)
-
     // 渲染每段文本
     const segments = config.text_segments.map((segment: any) => ({
       text: renderTemplate(segment.text || '', exif),
@@ -29,8 +26,6 @@ export class MultiRichTextProcessor extends ImageProcessor {
       is_bold: segment.is_bold || false,
       trim: segment.trim || false
     })).filter((seg: any) => seg.text)
-
-    console.log('[MultiRichTextProcessor] Rendered segments:', segments)
 
     if (segments.length === 0) {
       console.warn('[MultiRichTextProcessor] No text after rendering')
@@ -41,14 +36,10 @@ export class MultiRichTextProcessor extends ImageProcessor {
     const referenceHeight = ctx.buffer[0]?.height || 1000
     const referenceWidth = ctx.buffer[0]?.width || 1000
 
-    console.log('[MultiRichTextProcessor] Reference size:', referenceWidth, 'x', referenceHeight)
-
     // 计算文本高度和间距
     const height = this.calculateHeight(config.height, referenceHeight)
     const fontSize = height * 0.8
     const textSpacing = this.calculateSpacing(config.text_spacing, referenceWidth)  // 使用图片宽度作为参考
-
-    console.log('[MultiRichTextProcessor] Text height:', height, 'fontSize:', fontSize, 'spacing:', textSpacing)
 
     // 创建临时 canvas 测量文本
     const tempCanvas = createCanvas(1, 1)
@@ -68,8 +59,6 @@ export class MultiRichTextProcessor extends ImageProcessor {
     // 计算总宽度
     const totalWidth = segmentMetrics.reduce((sum: number, seg: any) => sum + seg.width, 0) +
                        textSpacing * (segments.length - 1)
-
-    console.log('[MultiRichTextProcessor] Total width:', totalWidth)
 
     // 创建文本图层
     const padding = 40
@@ -93,8 +82,6 @@ export class MultiRichTextProcessor extends ImageProcessor {
       currentX += seg.width + textSpacing
     })
 
-    console.log('[MultiRichTextProcessor] Text canvas created:', textCanvas.width, 'x', textCanvas.height)
-
     // 添加到 buffer
     ctx.buffer.push(textCanvas)
     return ctx
@@ -107,8 +94,15 @@ export class MultiRichTextProcessor extends ImageProcessor {
   }
 
   private calculateSpacing(value: number | undefined, reference: number): number {
-    if (!value) return 10
-    if (value > 0 && value <= 1) return value * reference
+    if (value === undefined) return 10  // 默认 10 像素
+
+    // 支持负值（让文字重叠）
+    if (value > -1 && value < 1) {
+      // 小数（-1 到 1 之间）视为百分比
+      return value * reference
+    }
+
+    // 其他情况视为固定像素（包括负数）
     return value
   }
 }

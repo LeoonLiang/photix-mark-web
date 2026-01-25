@@ -91,7 +91,7 @@ export class WatermarkProcessor extends ImageProcessor {
     // 左下（镜头）- 检查用户配置
     const showLens = config.showLens !== false  // 默认显示
     if (config.left_bottom && showLens) {
-      const text = this.renderTemplate(config.left_bottom.text || config.left_bottom, exif)
+      const text = this.renderTemplate(config.left_bottom.text || config.left_bottom, exif, config)
       if (text) {
         drawText(wCtx, {
           text,
@@ -110,11 +110,17 @@ export class WatermarkProcessor extends ImageProcessor {
     const logoSize = watermarkHeight * 0.8  // Logo 尺寸
     const showLogo = config.logoEnabled !== false  // 默认显示
     const logoPosition = config.logo_position || 'right'  // logo位置：left, center, right
+
+    // Logo 右侧边距（可配置，默认为 commonSpacing 的 1.5 倍，给长 logo 更多空间）
+    const logoRightMargin = config.logo_right_margin !== undefined
+      ? canvas.width * config.logo_right_margin
+      : commonSpacing * 1.5
+
     let rightX = canvas.width - commonSpacing
 
     // 绘制 Logo
     if (config.right_logo && showLogo) {
-      const logoPath = this.renderTemplate(config.right_logo, exif)
+      const logoPath = this.renderTemplate(config.right_logo, exif, config)
       console.log('[WatermarkProcessor] Logo path:', logoPath)
       if (logoPath) {
         let logoX: number
@@ -126,8 +132,8 @@ export class WatermarkProcessor extends ImageProcessor {
           // 左侧显示
           logoX = commonSpacing + logoSize / 2
         } else {
-          // 右侧显示（默认）
-          logoX = canvas.width - commonSpacing - logoSize / 2
+          // 右侧显示（默认）- 增加右侧边距
+          logoX = canvas.width - logoRightMargin - logoSize / 2
         }
 
         await drawLogo(wCtx, {
@@ -157,11 +163,16 @@ export class WatermarkProcessor extends ImageProcessor {
       rightX -= delimiterWidth / 2 + commonSpacing
     }
 
-    // 右上（拍摄参数）- 根据用户配置动态构建
-    if (config.right_top) {
-      // 根据用户配置构建拍摄参数文本
-      const parts = []
+    // 右侧文字对齐方式（默认右对齐）
+    const rightAlignment = config.right_alignment || 'right'
 
+    // 预先计算右上和右下文字的宽度
+    let rightTopText = ''
+    let rightBottomText = ''
+
+    // 右上（拍摄参数）
+    if (config.right_top) {
+      const parts = []
       if (config.showFocalLength !== false && exif.FocalLength) {
         parts.push(`${exif.FocalLength}mm`)
       }
@@ -174,40 +185,65 @@ export class WatermarkProcessor extends ImageProcessor {
       if (config.showISO !== false && exif.ISO) {
         parts.push(`ISO${exif.ISO}`)
       }
-
-      const paramText = parts.join(' ')
-
-      if (paramText) {
-        drawText(wCtx, {
-          text: paramText,
-          x: rightX,
-          y: textTopY,
-          align: 'right',
-          baseline: 'bottom',
-          color: parseColor(config.right_top.color || textColor),
-          fontSize: baseFontSize,
-          fontWeight: config.right_top.is_bold ? '700' : '300',
-          fontFamily: '"Alibaba PuHuiTi", Arial, sans-serif'
-        })
-      }
+      rightTopText = parts.join(' ')
     }
 
-    // 右下（拍摄时间）- 检查用户配置
-    const showDateTime = config.showDateTime !== false  // 默认显示
+    // 右下（拍摄时间）
+    const showDateTime = config.showDateTime !== false
     if (config.right_bottom && showDateTime) {
-      const text = this.renderTemplate(config.right_bottom.text || config.right_bottom, exif)
-      if (text) {
-        drawText(wCtx, {
-          text,
-          x: rightX,
-          y: textBottomY,
-          align: 'right',
-          baseline: 'top',
-          color: parseColor(config.right_bottom.color || textColor),
-          fontSize: baseFontSize,
-          fontFamily: '"Alibaba PuHuiTi", Arial, sans-serif'
-        })
-      }
+      rightBottomText = this.renderTemplate(config.right_bottom.text || config.right_bottom, exif, config) || ''
+    }
+
+    // 如果设置为左对齐，计算文字宽度并调整 X 位置
+    let rightTopX = rightX
+    let rightBottomX = rightX
+
+    if (rightAlignment === 'left' && (rightTopText || rightBottomText)) {
+      // 测量文字宽度
+      const tempCanvas = createCanvas(100, 100)
+      const tempCtx = tempCanvas.getContext('2d')!
+
+      tempCtx.font = `300 ${baseFontSize}px "Alibaba PuHuiTi", Arial, sans-serif`
+      const topWidth = rightTopText ? tempCtx.measureText(rightTopText).width : 0
+      const bottomWidth = rightBottomText ? tempCtx.measureText(rightBottomText).width : 0
+
+      // 取两者中较小的 X 位置（更靠左），实现左对齐效果
+      const minX = Math.min(
+        rightX - topWidth,
+        rightX - bottomWidth
+      )
+
+      rightTopX = minX
+      rightBottomX = minX
+    }
+
+    // 绘制右上文字
+    if (rightTopText && config.right_top) {
+      drawText(wCtx, {
+        text: rightTopText,
+        x: rightAlignment === 'left' ? rightTopX : rightX,
+        y: textTopY,
+        align: rightAlignment === 'left' ? 'left' : 'right',
+        baseline: 'bottom',
+        color: parseColor(config.right_top.color || textColor),
+        fontSize: baseFontSize,
+        fontWeight: config.right_top.is_bold ? '700' : '300',
+        fontFamily: '"Alibaba PuHuiTi", Arial, sans-serif'
+      })
+    }
+
+    // 绘制右下文字
+    if (rightBottomText) {
+      drawText(wCtx, {
+        text: rightBottomText,
+        x: rightAlignment === 'left' ? rightBottomX : rightX,
+        y: textBottomY,
+        align: rightAlignment === 'left' ? 'left' : 'right',
+        baseline: 'top',
+        color: parseColor(config.right_bottom?.color || textColor),
+        fontSize: baseFontSize,
+        fontFamily: '"Alibaba PuHuiTi", Arial, sans-serif'
+      })
     }
 
     ctx.buffer[0] = watermarkCanvas
@@ -218,7 +254,7 @@ export class WatermarkProcessor extends ImageProcessor {
    * 渲染模板字符串
    * 简化版的 Jinja2 模板渲染，支持 {{variable}} 和 {{variable|default('value')}}
    */
-  private renderTemplate(template: string, exif: Record<string, any>): string {
+  private renderTemplate(template: string, exif: Record<string, any>, config?: Record<string, any>): string {
     if (!template) return ''
 
     // 处理 {{variable}} 和 {{variable|default('value')}}
@@ -230,6 +266,18 @@ export class WatermarkProcessor extends ImageProcessor {
       if (logoMatch) {
         const [, varName] = logoMatch
         const value = this.getNestedValue(exif, varName.trim())
+
+        // 1. 优先使用配置中的自定义Logo URL
+        if (value && config?.customLogoUrl) {
+          return config.customLogoUrl
+        }
+
+        // 2. 其次使用默认Logo（没有品牌时）
+        if (!value && config?.customDefaultLogoUrl) {
+          return config.customDefaultLogoUrl
+        }
+
+        // 3. 使用系统默认Logo
         return value ? getLogoPath(String(value)) : '/logos/default.png'
       }
 

@@ -53,7 +53,9 @@
       <!-- Upload Card -->
       <Card class="bg-card/80 backdrop-blur-xl shadow-2xl shadow-primary/10">
         <CardContent class="p-8">
-          <ImageUploader @upload="handleUpload" />
+          <ClientOnly>
+            <ImageUploader @upload="handleUpload" />
+          </ClientOnly>
         </CardContent>
       </Card>
     </div>
@@ -129,6 +131,8 @@
                 :processors="currentTemplate.processors"
                 :user-config="currentConfig"
                 :preview-urls="previewUrls"
+                :custom-logos="customLogos"
+                :exif-cache="exifCache"
                 @update:current-index="currentIndex = $event"
               />
             </ClientOnly>
@@ -162,6 +166,22 @@
                 :template="currentTemplate"
                 :exif="currentExif"
                 v-model="currentConfig"
+              />
+            </CardContent>
+          </Card>
+
+          <!-- Brand Logo Manager -->
+          <Card v-if="uploadedFiles.length > 0" class="bg-card/80 backdrop-blur-xl shadow-lg shadow-primary/5">
+            <CardHeader class="border-b bg-black/10 py-3">
+              <CardTitle class="text-base">品牌 Logo</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <BrandLogoManager
+                :brands="brandStats"
+                :no-brand-count="noBrandCount"
+                :custom-logos="customLogos"
+                @update:custom-logos="customLogos = $event"
+                @logo-uploaded="handleLogoUploaded"
               />
             </CardContent>
           </Card>
@@ -237,6 +257,8 @@
               :processors="currentTemplate.processors"
               :user-config="currentConfig"
               :preview-urls="previewUrls"
+              :custom-logos="customLogos"
+              :exif-cache="exifCache"
               @update:current-index="currentIndex = $event"
             />
           </ClientOnly>
@@ -261,6 +283,17 @@
               :template="currentTemplate"
               :exif="currentExif"
               v-model="currentConfig"
+            />
+          </div>
+
+          <!-- 品牌管理 Tab -->
+          <div v-show="currentMobileTab === 'brand'" class="px-3 pt-2 pb-3">
+            <BrandLogoManager
+              :brands="brandStats"
+              :no-brand-count="noBrandCount"
+              :custom-logos="customLogos"
+              @update:custom-logos="customLogos = $event"
+              @logo-uploaded="handleLogoUploaded"
             />
           </div>
 
@@ -373,6 +406,7 @@ import CardHeader from '~/components/ui/CardHeader.vue'
 import CardTitle from '~/components/ui/CardTitle.vue'
 import CardContent from '~/components/ui/CardContent.vue'
 import ImageSelector from '~/components/ImageSelector.vue'
+import BrandLogoManager from '~/components/BrandLogoManager.vue'
 
 // Toast notifications
 const { success, error: showError, info } = useToast()
@@ -426,6 +460,11 @@ const exifCache = ref<Map<File, Record<string, any>>>(new Map())
 // 当前图片的 EXIF（用于显示）
 const currentExif = ref<Record<string, any>>({})
 
+// 品牌统计和Logo管理
+const brandStats = ref<Map<string, number>>(new Map())  // 品牌名 -> 图片数量
+const noBrandCount = ref(0)  // 没有品牌信息的图片数量
+const customLogos = ref<Map<string, string>>(new Map())  // 品牌名 -> 自定义Logo的DataURL
+
 // 当前图片的模板ID（用于UI绑定）
 const currentTemplateId = ref('noProcess')
 
@@ -441,6 +480,25 @@ const currentTemplate = computed<TemplateConfig>(() => {
 const { processBatch, processing, progress } = useBatchProcessor()
 const { processImage } = useImageProcessor()
 
+// 获取Logo URL（优先自定义Logo）
+function getLogoUrl(brand: string | undefined): string | undefined {
+  // 1. 如果有品牌，检查该品牌的自定义Logo
+  if (brand && brand.trim()) {
+    const trimmedBrand = brand.trim()
+    if (customLogos.value.has(trimmedBrand)) {
+      return customLogos.value.get(trimmedBrand)
+    }
+  }
+
+  // 2. 如果没有品牌或没有该品牌的自定义Logo，检查默认Logo
+  if (customLogos.value.has('')) {
+    return customLogos.value.get('')
+  }
+
+  // 3. 返回 undefined，让 watermark 处理器使用系统默认逻辑
+  return undefined
+}
+
 // 下载进度（独立于批量处理进度）
 const downloading = ref(false)
 const downloadProgress = ref({ current: 0, total: 0, percent: 0 })
@@ -455,11 +513,22 @@ const currentMobileTab = ref('template')
 const mobileTabs = [
   {
     id: 'template',
-    label: '模板配置',
+    label: '模板',
     icon: defineComponent({
       template: `
         <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h4a1 1 0 011 1v7a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM14 5a1 1 0 011-1h4a1 1 0 011 1v7a1 1 0 01-1 1h-4a1 1 0 01-1-1V5zM4 16a1 1 0 011-1h4a1 1 0 011 1v3a1 1 0 01-1 1H5a1 1 0 01-1-1v-3zM14 16a1 1 0 011-1h4a1 1 0 011 1v3a1 1 0 01-1 1h-4a1 1 0 01-1-1v-3z" />
+        </svg>
+      `
+    })
+  },
+  {
+    id: 'brand',
+    label: '品牌',
+    icon: defineComponent({
+      template: `
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
         </svg>
       `
     })
@@ -498,6 +567,8 @@ async function handleUpload(files: File[]) {
   processedCache.value.clear()
   previewUrls.value.clear()
   exifCache.value.clear()
+  brandStats.value.clear()
+  noBrandCount.value = 0
 
   // 为所有新图片初始化默认状态并读取 EXIF
   for (const file of files) {
@@ -510,9 +581,18 @@ async function handleUpload(files: File[]) {
     try {
       const exif = await readExif(file)
       exifCache.value.set(file, exif)
+
+      // 统计品牌
+      if (exif.Make && exif.Make.trim()) {
+        const brand = exif.Make.trim()
+        brandStats.value.set(brand, (brandStats.value.get(brand) || 0) + 1)
+      } else {
+        noBrandCount.value++
+      }
     } catch (error) {
       console.error('Failed to read EXIF:', error)
       exifCache.value.set(file, {})
+      noBrandCount.value++
     }
   }
 
@@ -583,6 +663,96 @@ watch(currentConfig, () => {
   saveCurrentImageState()
 }, { deep: true })
 
+// 监听自定义Logo变化，触发预览更新
+watch(customLogos, () => {
+  // Logo变化时，触发当前图片预览的微小变化，让 ImageCarousel 重新生成预览
+  // 注意：不在这里清除缓存，因为 handleLogoUploaded 会处理重新生成
+  currentConfig.value = { ...currentConfig.value, _logoUpdateTrigger: Date.now() }
+}, { deep: true })
+
+// 处理Logo上传成功
+async function handleLogoUploaded(brand: string) {
+  const brandName = brand || '无品牌'
+
+  // 找出所有需要重新处理的图片
+  const filesToReprocess: File[] = []
+
+  for (const file of uploadedFiles.value) {
+    const state = imageStates.value.get(file)
+    const exif = exifCache.value.get(file)
+    const fileBrand = exif?.Make?.trim()
+
+    // 跳过未处理的图片
+    if (!state || state.templateId === 'noProcess') {
+      continue
+    }
+
+    // 检查是否匹配该品牌
+    if (brand === '') {
+      // 默认Logo：匹配无品牌的图片
+      if (!fileBrand) {
+        filesToReprocess.push(file)
+      }
+    } else {
+      // 特定品牌Logo：匹配该品牌的图片
+      if (fileBrand === brand) {
+        filesToReprocess.push(file)
+      }
+    }
+  }
+
+  if (filesToReprocess.length === 0) {
+    success(`${brandName} Logo 已更新`)
+    return
+  }
+
+  success(`${brandName} Logo 已更新，正在重新处理 ${filesToReprocess.length} 张图片...`)
+
+  // 逐个重新处理这些图片（因为每个图片可能用不同模板）
+  try {
+    let processedCount = 0
+
+    for (const file of filesToReprocess) {
+      const state = imageStates.value.get(file)
+      if (!state) continue
+
+      const template = templates.value.find(t => t.id === state.templateId)
+      if (!template) continue
+
+      // 获取自定义Logo配置
+      const exif = exifCache.value.get(file)
+      const fileBrand = exif?.Make?.trim()
+
+      const configWithLogo = {
+        ...state.config,
+        customLogoUrl: fileBrand && customLogos.value.has(fileBrand) ? customLogos.value.get(fileBrand) : undefined,
+        customDefaultLogoUrl: customLogos.value.get('')
+      }
+
+      try {
+        const canvas = await processImage(file, template.processors, configWithLogo)
+        const blob = await canvasToBlob(canvas)
+
+        // 更新缓存
+        processedCache.value.set(file, { canvas, blob })
+
+        // 生成预览 URL
+        const previewUrl = canvas.toDataURL('image/jpeg', 0.8)
+        previewUrls.value.set(file, previewUrl)
+
+        processedCount++
+      } catch (error) {
+        console.error(`Failed to reprocess ${file.name}:`, error)
+      }
+    }
+
+    success(`${brandName} Logo 已应用到 ${processedCount} 张图片`)
+  } catch (error) {
+    console.error('Reprocess error:', error)
+    showError('重新处理失败，请重试')
+  }
+}
+
 // 重置应用
 function resetApp() {
   if (confirm('确定要重新开始吗？当前的编辑将丢失。')) {
@@ -592,6 +762,9 @@ function resetApp() {
     processedCache.value.clear()
     previewUrls.value.clear()
     exifCache.value.clear()
+    brandStats.value.clear()
+    noBrandCount.value = 0
+    customLogos.value.clear()
     currentTemplateId.value = 'noProcess'
     currentConfig.value = {}
     currentExif.value = {}
@@ -632,7 +805,19 @@ async function applyToAll() {
     const results = await processBatch(
       uploadedFiles.value,
       currentTemplate.value.processors,
-      currentConfig.value
+      currentConfig.value,
+      (file) => {
+        // 为每个文件提供自定义Logo配置
+        const exif = exifCache.value.get(file)
+        const brand = exif?.Make?.trim()
+
+        return {
+          // 品牌Logo：仅返回该品牌的自定义Logo（不含默认）
+          customLogoUrl: brand && customLogos.value.has(brand) ? customLogos.value.get(brand) : undefined,
+          // 默认Logo：用于无品牌时
+          customDefaultLogoUrl: customLogos.value.get('')
+        }
+      }
     )
 
     // 缓存处理结果和预览URL
@@ -692,7 +877,17 @@ async function handleApplyToSelected(selectedFiles: File[]) {
     const results = await processBatch(
       selectedFiles,
       currentTemplate.value.processors,
-      currentConfig.value
+      currentConfig.value,
+      (file) => {
+        // 为每个文件提供自定义Logo配置
+        const exif = exifCache.value.get(file)
+        const brand = exif?.Make?.trim()
+
+        return {
+          customLogoUrl: brand && customLogos.value.has(brand) ? customLogos.value.get(brand) : undefined,
+          customDefaultLogoUrl: customLogos.value.get('')
+        }
+      }
     )
 
     // 缓存处理结果和预览URL
@@ -732,10 +927,20 @@ async function downloadCurrent() {
       const template = templates.value.find(t => t.id === state.templateId)
       if (!template) return
 
+      // 获取自定义Logo配置
+      const exif = exifCache.value.get(currentFile)
+      const brand = exif?.Make?.trim()
+
+      const configWithLogo = {
+        ...state.config,
+        customLogoUrl: brand && customLogos.value.has(brand) ? customLogos.value.get(brand) : undefined,
+        customDefaultLogoUrl: customLogos.value.get('')
+      }
+
       const canvas = await processImage(
         currentFile,
         template.processors,
-        state.config
+        configWithLogo
       )
       blob = await canvasToBlob(canvas)
 
@@ -795,10 +1000,20 @@ async function downloadAll() {
         const template = templates.value.find(t => t.id === state.templateId)
         if (!template) continue
 
+        // 获取自定义Logo配置
+        const exif = exifCache.value.get(file)
+        const brand = exif?.Make?.trim()
+
+        const configWithLogo = {
+          ...state.config,
+          customLogoUrl: brand && customLogos.value.has(brand) ? customLogos.value.get(brand) : undefined,
+          customDefaultLogoUrl: customLogos.value.get('')
+        }
+
         const canvas = await processImage(
           file,
           template.processors,
-          state.config
+          configWithLogo
         )
         blob = await canvasToBlob(canvas)
 
