@@ -2,7 +2,7 @@
   <div class="h-full flex flex-col" style="box-sizing: border-box;">
     <!-- Main Image - flex-1 takes remaining space -->
     <div
-      class="flex items-center justify-center bg-gray-50 rounded-lg overflow-hidden cursor-pointer"
+      class="flex items-center justify-center bg-gray rounded-lg overflow-hidden cursor-pointer"
       :style="{
         flex: files.length > 1 ? '1 1 0' : '1 1 auto',
         minHeight: 0
@@ -24,11 +24,11 @@
     </div>
 
     <!-- Thumbnails Carousel - 优化样式 -->
-    <div v-if="files.length > 1" class="border-t border-border/50 bg-background/30" style="height: 88px; flex-shrink: 0; padding: 8px 0;">
+    <div v-if="files.length > 1" class="border-t border-border/50 bg-background/30" style="height: 96px; flex-shrink: 0; padding: 8px 0;">
       <div class="flex items-center gap-1.5 h-full px-2">
         <!-- Thumbnail List - 无箭头，纯滚动 -->
         <div ref="thumbnailContainer" class="flex-1 overflow-x-auto h-full scrollbar-hide smooth-scroll">
-          <div class="flex gap-2 h-full pb-1">
+          <div class="flex gap-2 h-full items-center p-1">
             <div
               v-for="(file, index) in files"
               :key="index"
@@ -42,7 +42,7 @@
               ]"
               :style="{
                 width: '56px',
-                height: '72px'
+                height: '68px'
               }"
             >
               <img

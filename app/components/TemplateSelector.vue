@@ -48,8 +48,8 @@
     </div>
 
     <!-- 移动端：横向滚动小卡片 -->
-    <div class="lg:hidden overflow-x-auto scrollbar-hide smooth-scroll py-2">
-      <div class="flex gap-2 px-0.5">
+    <div class="lg:hidden overflow-x-auto scrollbar-hide smooth-scroll">
+      <div class="flex gap-3 px-3 py-2">
         <button
           v-for="template in templates"
           :key="template.id"
@@ -57,7 +57,7 @@
           :class="[
             'rounded-lg transition-all duration-200 overflow-hidden flex-shrink-0',
             selectedId === template.id
-              ? 'ring-2 ring-primary shadow-md scale-105'
+              ? 'ring-2 ring-primary shadow-md'
               : 'opacity-70',
           ]"
           style="width: 90px;"
