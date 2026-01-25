@@ -34,6 +34,9 @@ export function useImageProcessor() {
       config: userConfig || {}
     }
 
+    // 保存初始用户配置，用于覆盖模板配置
+    const initialUserConfig = { ...context.config }
+
     // 4. 执行处理器管道
     for (const step of processors) {
       const ProcessorClass = getProcessor(step.processor_name)
@@ -45,16 +48,19 @@ export function useImageProcessor() {
 
       try {
         const processor = new ProcessorClass()
-        // 保存用户配置
-        const savedUserConfig = { ...context.config }
-        // 合并步骤配置到上下文
-        context.config = { ...context.config, ...step }
-        // 用户配置优先级更高，重新应用用户的 show* 配置
-        Object.keys(savedUserConfig).forEach(key => {
-          if (key.startsWith('show') || key === 'logoEnabled') {
-            context.config[key] = savedUserConfig[key]
-          }
-        })
+        // 不要累积配置，每次都重新合并
+        // 保留 exif 和 buffer，但重置 config
+        context.config = { ...initialUserConfig, ...step }
+
+        // 只在 watermark 处理器中应用用户配置覆盖
+        if (step.processor_name === 'watermark') {
+          // 用户配置优先级更高，重新应用用户的 show* 配置
+          Object.keys(initialUserConfig).forEach(key => {
+            if ((key.startsWith('show') || key === 'logoEnabled') && initialUserConfig[key] !== undefined) {
+              context.config[key] = initialUserConfig[key]
+            }
+          })
+        }
 
         // 执行处理
         const result = processor.process(context)

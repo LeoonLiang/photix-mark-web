@@ -1,5 +1,5 @@
 <template>
-  <div class="space-y-4">
+  <div class="space-y-3">
     <!-- 颜色配置 -->
     <div v-if="hasColorConfig">
       <h3 class="text-xs font-semibold text-gray-700 mb-2">颜色</h3>
@@ -141,16 +141,22 @@
         </button>
       </div>
     </div>
+
+    <!-- EXIF 信息展示 -->
+    <ExifViewer v-if="exif" :exif="exif" />
   </div>
 </template>
 
 <script setup lang="ts">
+import ExifViewer from './ExifViewer.vue'
+
 import { ref, watch, computed } from 'vue'
 import type { TemplateConfig } from '~/lib/templates/types'
 
 const props = defineProps<{
   template: TemplateConfig
   modelValue: Record<string, any>
+  exif?: Record<string, any>
 }>()
 
 const emit = defineEmits<{

@@ -105,14 +105,14 @@
         应用到全部
       </Button>
 
-      <!-- 保存按钮 -->
+      <!-- 导出按钮 -->
       <Button
         @click="downloadAll"
-        variant="ghost"
+        variant="default"
         size="sm"
         class="text-xs px-3 py-1.5 font-medium"
       >
-        保存
+        导出全部
       </Button>
     </header>
 
@@ -160,6 +160,7 @@
             <CardContent>
               <TemplateConfig
                 :template="currentTemplate"
+                :exif="currentExif"
                 v-model="currentConfig"
               />
             </CardContent>
@@ -258,6 +259,7 @@
             <TemplateConfig
               v-if="currentTemplateId !== 'noProcess'"
               :template="currentTemplate"
+              :exif="currentExif"
               v-model="currentConfig"
             />
           </div>
@@ -359,6 +361,8 @@ import { ref, watch, computed, defineComponent } from 'vue'
 import { useTemplates } from '~/composables/useTemplates'
 import { useBatchProcessor } from '~/composables/useBatchProcessor'
 import { useImageProcessor } from '~/composables/useImageProcessor'
+import { useToast } from '~/composables/useToast'
+import { useExif } from '~/composables/useExif'
 import { downloadImages } from '~/utils/download'
 import { canvasToBlob } from '~/utils/canvas'
 import { initProcessors } from '~/lib/processors'
@@ -369,6 +373,12 @@ import CardHeader from '~/components/ui/CardHeader.vue'
 import CardTitle from '~/components/ui/CardTitle.vue'
 import CardContent from '~/components/ui/CardContent.vue'
 import ImageSelector from '~/components/ImageSelector.vue'
+
+// Toast notifications
+const { success, error: showError, info } = useToast()
+
+// EXIF 读取
+const { readExif } = useExif()
 
 // 图片状态接口
 interface ImageState {
@@ -409,6 +419,12 @@ const processedCache = ref<Map<File, ProcessedResult>>(new Map())
 
 // 预览URL缓存（用于快速切换显示）
 const previewUrls = ref<Map<File, string>>(new Map())
+
+// EXIF 数据缓存
+const exifCache = ref<Map<File, Record<string, any>>>(new Map())
+
+// 当前图片的 EXIF（用于显示）
+const currentExif = ref<Record<string, any>>({})
 
 // 当前图片的模板ID（用于UI绑定）
 const currentTemplateId = ref('noProcess')
@@ -473,7 +489,7 @@ const mobileTabs = [
 ]
 
 // 处理上传 - 为每张图片初始化默认状态
-function handleUpload(files: File[]) {
+async function handleUpload(files: File[]) {
   uploadedFiles.value = files
   currentIndex.value = 0
 
@@ -481,14 +497,24 @@ function handleUpload(files: File[]) {
   imageStates.value.clear()
   processedCache.value.clear()
   previewUrls.value.clear()
+  exifCache.value.clear()
 
-  // 为所有新图片初始化默认状态
-  files.forEach(file => {
+  // 为所有新图片初始化默认状态并读取 EXIF
+  for (const file of files) {
     imageStates.value.set(file, {
       templateId: 'noProcess',
       config: {}
     })
-  })
+
+    // 异步读取 EXIF
+    try {
+      const exif = await readExif(file)
+      exifCache.value.set(file, exif)
+    } catch (error) {
+      console.error('Failed to read EXIF:', error)
+      exifCache.value.set(file, {})
+    }
+  }
 
   // 加载第一张图片的状态
   loadCurrentImageState()
@@ -508,6 +534,14 @@ function loadCurrentImageState() {
     if (JSON.stringify(currentConfig.value) !== JSON.stringify(state.config)) {
       currentConfig.value = { ...state.config }
     }
+  }
+
+  // 加载当前图片的 EXIF
+  const exif = exifCache.value.get(currentFile)
+  if (exif) {
+    currentExif.value = exif
+  } else {
+    currentExif.value = {}
   }
 }
 
@@ -557,8 +591,10 @@ function resetApp() {
     imageStates.value.clear()
     processedCache.value.clear()
     previewUrls.value.clear()
+    exifCache.value.clear()
     currentTemplateId.value = 'noProcess'
     currentConfig.value = {}
+    currentExif.value = {}
   }
 }
 
@@ -587,7 +623,7 @@ async function applyToAll() {
   if (currentTemplateId.value === 'noProcess') {
     processedCache.value.clear()
     previewUrls.value.clear()
-    alert('已应用到所有图片！')
+    success('已应用到所有图片！')
     return
   }
 
@@ -611,10 +647,10 @@ async function applyToAll() {
       previewUrls.value.set(result.file, previewUrl)
     })
 
-    alert('处理完成！所有图片已应用模板。')
+    success('处理完成！所有图片已应用模板。')
   } catch (error) {
     console.error('Processing error:', error)
-    alert('处理失败，请查看控制台')
+    showError('处理失败，请重试')
   }
 }
 
@@ -647,7 +683,7 @@ async function handleApplyToSelected(selectedFiles: File[]) {
       processedCache.value.delete(file)
       previewUrls.value.delete(file)
     })
-    alert('已应用到选中的图片！')
+    success('已应用到选中的图片！')
     return
   }
 
@@ -671,10 +707,10 @@ async function handleApplyToSelected(selectedFiles: File[]) {
       previewUrls.value.set(result.file, previewUrl)
     })
 
-    alert(`处理完成！已应用到 ${selectedFiles.length} 张图片。`)
+    success(`处理完成！已应用到 ${selectedFiles.length} 张图片。`)
   } catch (error) {
     console.error('Processing error:', error)
-    alert('处理失败，请查看控制台')
+    showError('处理失败，请重试')
   }
 }
 
@@ -712,10 +748,10 @@ async function downloadCurrent() {
       name: currentFile.name
     }])
 
-    alert('导出成功！')
+    success('导出成功！')
   } catch (error) {
     console.error('Download error:', error)
-    alert('导出失败')
+    showError('导出失败，请重试')
   }
 }
 
@@ -725,56 +761,79 @@ async function downloadAll() {
 
   try {
     downloading.value = true
-    downloadProgress.value = { current: 0, total: uploadedFiles.value.length, percent: 0 }
     const results = []
+    let skippedCount = 0
+    let processedCount = 0
+
+    // 计算需要处理的图片总数（排除 noProcess）
+    const totalToProcess = uploadedFiles.value.filter(file => {
+      const state = imageStates.value.get(file)
+      return state && state.templateId !== 'noProcess'
+    }).length
+
+    downloadProgress.value = { current: 0, total: totalToProcess, percent: 0 }
 
     for (let i = 0; i < uploadedFiles.value.length; i++) {
       const file = uploadedFiles.value[i]
       const state = imageStates.value.get(file)
       if (!state) continue
 
+      // 跳过未处理的图片
+      if (state.templateId === 'noProcess') {
+        skippedCount++
+        continue
+      }
+
       let blob: Blob
 
-      // 如果是"不处理"，使用原图
-      if (state.templateId === 'noProcess') {
-        blob = new Blob([file], { type: file.type })
+      // 优先使用缓存
+      const cached = processedCache.value.get(file)
+      if (cached) {
+        blob = cached.blob
       } else {
-        // 优先使用缓存
-        const cached = processedCache.value.get(file)
-        if (cached) {
-          blob = cached.blob
-        } else {
-          // 没有缓存则重新处理
-          const template = templates.value.find(t => t.id === state.templateId)
-          if (!template) continue
+        // 没有缓存则重新处理
+        const template = templates.value.find(t => t.id === state.templateId)
+        if (!template) continue
 
-          const canvas = await processImage(
-            file,
-            template.processors,
-            state.config
-          )
-          blob = await canvasToBlob(canvas)
+        const canvas = await processImage(
+          file,
+          template.processors,
+          state.config
+        )
+        blob = await canvasToBlob(canvas)
 
-          // 缓存结果
-          processedCache.value.set(file, { canvas, blob })
-        }
+        // 缓存结果
+        processedCache.value.set(file, { canvas, blob })
       }
 
       results.push({ blob, name: file.name })
+      processedCount++
 
       // 更新进度
       downloadProgress.value = {
-        current: i + 1,
-        total: uploadedFiles.value.length,
-        percent: Math.round(((i + 1) / uploadedFiles.value.length) * 100)
+        current: processedCount,
+        total: totalToProcess,
+        percent: totalToProcess > 0 ? Math.round((processedCount / totalToProcess) * 100) : 0
       }
     }
 
+    // 如果没有已处理的图片，提示用户
+    if (results.length === 0) {
+      showError('没有已处理的图片可以导出')
+      return
+    }
+
     await downloadImages(results)
-    alert('导出成功！')
+
+    // 根据是否跳过图片显示不同的成功消息
+    if (skippedCount > 0) {
+      success(`成功导出 ${results.length} 张图片，跳过 ${skippedCount} 张未处理图片`)
+    } else {
+      success(`成功导出 ${results.length} 张图片`)
+    }
   } catch (error) {
     console.error('Download error:', error)
-    alert('导出失败')
+    showError('导出失败，请重试')
   } finally {
     downloading.value = false
   }

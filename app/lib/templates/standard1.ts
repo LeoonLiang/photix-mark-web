@@ -40,7 +40,7 @@ export const standard1: TemplateConfig = {
       },
       logoEnabled: true,
       right_logo: '{{Make|logo}}',
-      delimiter_color: '#D8D8D6',
+      delimiter_color: 'transparent',
       color: 'white',
       textColor: '#242424'
     }
