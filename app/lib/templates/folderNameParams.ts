@@ -35,7 +35,7 @@ export const folderNameParams: TemplateConfig = {
     // 3. 横向合并时间戳和参数
     {
       processor_name: 'concat',
-      spacing: 0.015,  // 文本间距
+      spacing: 0.4,  // 文本间距 3%
       direction: 'horizontal',
       select: [1, 2]  // 两个文字层
     },
@@ -44,13 +44,12 @@ export const folderNameParams: TemplateConfig = {
       processor_name: 'alignment',
       horizontal_alignment: 'right',
       vertical_alignment: 'bottom',
-      offsets: [[0, 0], [-0.03, -0.03]]  // 负数偏移，往左上移动
+      offsets: [[0, 0], [-0.05, -0.03]]  // 右侧边距5%，底部边距3%
     }
   ],
 
   userOptions: {
     exifFields: {
-      showDateTime: true,
       showFocalLength: true,
       showAperture: true,
       showShutter: true,

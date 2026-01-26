@@ -52,15 +52,13 @@ export function useImageProcessor() {
         // 保留 exif 和 buffer，但重置 config
         context.config = { ...initialUserConfig, ...step }
 
-        // 只在 watermark 处理器中应用用户配置覆盖
-        if (step.processor_name === 'watermark') {
-          // 用户配置优先级更高，重新应用用户的 show* 配置
-          Object.keys(initialUserConfig).forEach(key => {
-            if ((key.startsWith('show') || key === 'logoEnabled') && initialUserConfig[key] !== undefined) {
-              context.config[key] = initialUserConfig[key]
-            }
-          })
-        }
+        // 用户配置优先级更高，重新应用用户的 show* 和其他配置
+        // 适用于所有处理器（watermark、rich_text 等）
+        Object.keys(initialUserConfig).forEach(key => {
+          if ((key.startsWith('show') || key === 'logoEnabled') && initialUserConfig[key] !== undefined) {
+            context.config[key] = initialUserConfig[key]
+          }
+        })
 
         // 执行处理
         const result = processor.process(context)

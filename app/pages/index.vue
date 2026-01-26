@@ -661,6 +661,24 @@ watch(currentConfig, () => {
     previewUrls.value.delete(currentFile)
   }
   saveCurrentImageState()
+
+  // 🔧 修复：同步配置到所有使用相同模板的其他图片
+  const currentTemplateIdValue = currentTemplateId.value
+  uploadedFiles.value.forEach(file => {
+    if (file === currentFile) return // 跳过当前图片（已保存）
+
+    const state = imageStates.value.get(file)
+    if (state && state.templateId === currentTemplateIdValue) {
+      // 相同模板的图片，同步配置
+      imageStates.value.set(file, {
+        templateId: state.templateId,
+        config: { ...currentConfig.value }
+      })
+      // 清除缓存，下次切换时会重新生成
+      processedCache.value.delete(file)
+      previewUrls.value.delete(file)
+    }
+  })
 }, { deep: true })
 
 // 监听自定义Logo变化，触发预览更新

@@ -9,17 +9,26 @@
       }"
       @click="openPreview"
     >
+      <!-- 加载中状态 -->
+      <div v-if="isProcessing" class="flex flex-col items-center justify-center">
+        <svg class="animate-spin w-12 h-12 text-primary mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+        </svg>
+        <p class="text-muted-foreground font-medium">处理中...</p>
+      </div>
+      <!-- 预览图片 -->
       <img
-        v-if="currentPreviewUrl"
+        v-else-if="currentPreviewUrl"
         :src="currentPreviewUrl"
         :alt="files[currentIndex]?.name"
         style="max-height: 100%; max-width: 100%; height: auto; width: auto; object-fit: contain;"
       />
+      <!-- 初始加载状态 -->
       <div v-else class="flex flex-col items-center justify-center">
         <svg class="animate-spin w-12 h-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
         </svg>
-        <p class="text-gray-500">处理中...</p>
+        <p class="text-gray-500">加载中...</p>
       </div>
     </div>
 
@@ -89,6 +98,7 @@ const thumbnailContainer = ref<HTMLElement | null>(null)
 // 预览缓存
 const originalUrls = ref<Map<File, string>>(new Map())
 const processedUrls = ref<Map<File, string>>(new Map())
+const isProcessing = ref(false)  // 处理中状态
 const { generatePreview, clearCache } = useWatermarkPreview()
 
 // 滚动到当前缩略图
@@ -130,20 +140,27 @@ const updateCurrentPreview = useDebounceFn(async () => {
 
   // 如果没有处理器，使用原图
   if (!props.processors || props.processors.length === 0) {
+    isProcessing.value = false
     return
   }
 
-  // 如果父组件已有预览URL，不需要重新处理
-  if (props.previewUrls && props.previewUrls.has(currentFile)) {
-    return
-  }
-
-  // 检查是否已有本地缓存，避免重复处理
+  // 🔧 修复：先检查本地缓存（配置变化时会被 watch 清除）
+  // 如果本地有缓存，说明配置没变，直接使用
   if (processedUrls.value.has(currentFile)) {
+    isProcessing.value = false
+    return
+  }
+
+  // 然后检查父组件缓存（来自"应用全部"）
+  if (props.previewUrls && props.previewUrls.has(currentFile)) {
+    isProcessing.value = false
     return
   }
 
   try {
+    // 开始处理
+    isProcessing.value = true
+
     // 获取当前文件的品牌信息
     const exif = props.exifCache?.get(currentFile)
     const brand = exif?.Make?.trim()
@@ -164,6 +181,9 @@ const updateCurrentPreview = useDebounceFn(async () => {
     processedUrls.value.set(currentFile, previewUrl)
   } catch (error) {
     console.error('Failed to generate preview:', error)
+  } finally {
+    // 处理完成
+    isProcessing.value = false
   }
 }, 300)
 
@@ -172,14 +192,14 @@ const currentPreviewUrl = computed(() => {
   const currentFile = props.files[props.currentIndex]
   if (!currentFile) return null
 
-  // 优先使用父组件传递的预览URL（来自"应用全部"）
-  if (props.previewUrls && props.previewUrls.has(currentFile)) {
-    return props.previewUrls.get(currentFile)!
-  }
-
-  // 其次返回本地处理后的URL
+  // 🔧 修复：优先使用本地处理后的URL（配置变化时会重新生成）
   if (processedUrls.value.has(currentFile)) {
     return processedUrls.value.get(currentFile)!
+  }
+
+  // 其次使用父组件传递的预览URL（来自"应用全部"）
+  if (props.previewUrls && props.previewUrls.has(currentFile)) {
+    return props.previewUrls.get(currentFile)!
   }
 
   // 最后返回原图
@@ -249,6 +269,9 @@ watch(() => props.currentIndex, () => {
 watch([() => props.processors, () => props.userConfig, () => props.customLogos], () => {
   const currentFile = props.files[props.currentIndex]
   if (!currentFile) return
+
+  // 设置处理中状态
+  isProcessing.value = true
 
   // 只清除当前图片的处理缓存
   const currentProcessedUrl = processedUrls.value.get(currentFile)
