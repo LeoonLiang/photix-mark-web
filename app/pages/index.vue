@@ -391,6 +391,7 @@ import { useTemplates } from '~/composables/useTemplates'
 import { useBatchProcessor } from '~/composables/useBatchProcessor'
 import { useImageProcessor } from '~/composables/useImageProcessor'
 import { useToast } from '~/composables/useToast'
+import { useConfirm } from '~/composables/useConfirm'
 import { useExif } from '~/composables/useExif'
 import { downloadImages } from '~/utils/download'
 import { canvasToBlob } from '~/utils/canvas'
@@ -406,6 +407,9 @@ import BrandLogoManager from '~/components/BrandLogoManager.vue'
 
 // Toast notifications
 const { success, error: showError, info } = useToast()
+
+// Confirm dialog
+const { confirm } = useConfirm()
 
 // EXIF 读取
 const { readExif } = useExif()
@@ -768,8 +772,15 @@ async function handleLogoUploaded(brand: string) {
 }
 
 // 重置应用
-function resetApp() {
-  if (confirm('确定要重新开始吗？当前的编辑将丢失。')) {
+async function resetApp() {
+  const confirmed = await confirm({
+    title: '重新开始',
+    message: '确定要重新开始吗？当前的编辑将丢失。',
+    confirmText: '重新开始',
+    cancelText: '取消'
+  })
+
+  if (confirmed) {
     uploadedFiles.value = []
     currentIndex.value = 0
     imageStates.value.clear()
@@ -794,7 +805,14 @@ function handleTemplateSelect(id: string) {
 
 // 应用到所有图片 - 将当前模板和配置应用到所有图片并立即批量处理
 async function applyToAll() {
-  if (!confirm(`确定要将当前模板应用到全部 ${uploadedFiles.value.length} 张图片吗？`)) {
+  const confirmed = await confirm({
+    title: '应用到全部图片',
+    message: `确定要将当前模板应用到全部 ${uploadedFiles.value.length} 张图片吗？`,
+    confirmText: '应用',
+    cancelText: '取消'
+  })
+
+  if (!confirmed) {
     return
   }
 
@@ -864,7 +882,14 @@ async function handleApplyToSelected(selectedFiles: File[]) {
 
   if (selectedFiles.length === 0) return
 
-  if (!confirm(`确定要将当前模板应用到选中的 ${selectedFiles.length} 张图片吗？`)) {
+  const confirmed = await confirm({
+    title: '应用到选中图片',
+    message: `确定要将当前模板应用到选中的 ${selectedFiles.length} 张图片吗？`,
+    confirmText: '应用',
+    cancelText: '取消'
+  })
+
+  if (!confirmed) {
     return
   }
 
