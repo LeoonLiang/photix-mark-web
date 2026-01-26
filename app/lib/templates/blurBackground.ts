@@ -6,7 +6,7 @@ import type { TemplateConfig } from './types'
  */
 export const blurBackground: TemplateConfig = {
   id: 'blurBackground',
-  name: '背景模糊',
+  name: '艺术版式',
   description: '带模糊背景效果的创意水印',
   preview: '/templates/blur_background.jpg',
 

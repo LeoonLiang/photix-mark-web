@@ -7,7 +7,7 @@ import type { TemplateConfig } from './types'
  */
 export const sidebarWatermark: TemplateConfig = {
   id: 'sidebarWatermark',
-  name: '侧边栏样式',
+  name: '杂志版式',
   description: '左侧原图，右侧参数垂直排列，适合横屏图片',
   preview: '/templates/sidebar.jpg',
 

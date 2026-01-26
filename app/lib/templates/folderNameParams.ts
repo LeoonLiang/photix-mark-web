@@ -6,7 +6,7 @@ import type { TemplateConfig } from './types'
  */
 export const folderNameParams: TemplateConfig = {
   id: 'folderNameParams',
-  name: '时间戳+参数',
+  name: '极简角标',
   description: '右下角显示拍摄时间和参数',
   preview: '/templates/folder_name.jpg',
 

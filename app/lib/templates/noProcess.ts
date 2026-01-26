@@ -6,7 +6,7 @@ import type { TemplateConfig } from './types'
  */
 export const noProcess: TemplateConfig = {
   id: 'noProcess',
-  name: '不处理',
+  name: '原图',
   description: '保持原图，不添加水印',
   preview: '/templates/no_process.jpg',
 

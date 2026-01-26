@@ -6,7 +6,7 @@ import type { TemplateConfig } from './types'
  */
 export const logoCentered: TemplateConfig = {
   id: 'logoCentered',
-  name: 'Logo居中',
+  name: '品牌印记',
   description: '只显示居中的品牌 Logo，适合突出品牌',
   preview: '/templates/logo_centered.jpg',
 

@@ -6,7 +6,7 @@ import type { TemplateConfig } from './types'
  */
 export const standard1: TemplateConfig = {
   id: 'standard1',
-  name: '标准样式1',
+  name: '经典版式',
   description: '经典四角水印，包含相机、镜头、拍摄参数和时间',
   preview: '/templates/standard1.jpg',
 
