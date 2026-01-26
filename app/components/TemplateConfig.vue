@@ -141,15 +141,10 @@
         </button>
       </div>
     </div>
-
-    <!-- EXIF 信息展示 -->
-    <ExifViewer v-if="exif" :exif="exif" />
   </div>
 </template>
 
 <script setup lang="ts">
-import ExifViewer from './ExifViewer.vue'
-
 import { ref, watch, computed } from 'vue'
 import type { TemplateConfig } from '~/lib/templates/types'
 

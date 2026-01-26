@@ -2,7 +2,7 @@
   <div class="h-full flex flex-col" style="box-sizing: border-box;">
     <!-- Main Image - flex-1 takes remaining space -->
     <div
-      class="flex items-center justify-center bg-gray rounded-lg overflow-hidden cursor-pointer"
+      class="relative flex items-center justify-center bg-gray rounded-lg overflow-hidden cursor-pointer"
       :style="{
         flex: files.length > 1 ? '1 1 0' : '1 1 auto',
         minHeight: 0
@@ -30,6 +30,172 @@
         </svg>
         <p class="text-gray-500">加载中...</p>
       </div>
+
+      <!-- EXIF 信息卡片 - 按钮悬浮在右上角 -->
+      <div
+        v-if="currentExif && Object.keys(currentExif).length > 0"
+        class="absolute top-3 right-3 z-10"
+        @click.stop
+      >
+        <!-- 折叠按钮 -->
+        <button
+          @click="exifExpanded = !exifExpanded"
+          :class="[
+            'flex items-center gap-2 px-3 py-2 rounded-xl transition-all',
+            'bg-black/60 backdrop-blur-xl border border-white/20',
+            'hover:bg-black/70 hover:border-white/30',
+            'text-white text-xs font-medium shadow-lg'
+          ]"
+        >
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <span>EXIF 信息</span>
+          <svg
+            class="w-3.5 h-3.5 transition-transform duration-200"
+            :class="{ 'rotate-180': exifExpanded }"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+          </svg>
+        </button>
+      </div>
+
+      <!-- EXIF 详细信息 - Teleport 到 body -->
+      <Teleport to="body">
+        <Transition name="exif-modal">
+          <div
+            v-if="exifExpanded && currentExif && Object.keys(currentExif).length > 0"
+            class="fixed inset-0 z-[9999] flex items-center justify-center p-4"
+            @click="exifExpanded = false"
+          >
+            <!-- 背景遮罩 -->
+            <div class="absolute inset-0 bg-black/50 backdrop-blur-sm"></div>
+
+            <!-- EXIF 内容卡片 -->
+            <div
+              class="relative bg-black/90 backdrop-blur-xl rounded-2xl border border-white/20 shadow-2xl overflow-hidden max-w-md w-full max-h-[85vh]"
+              @click.stop
+            >
+              <!-- Header -->
+              <div class="flex items-center justify-between p-4 border-b border-white/10">
+                <div class="flex items-center gap-2">
+                  <div class="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center">
+                    <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </div>
+                  <span class="font-semibold text-white">EXIF 信息</span>
+                </div>
+                <button
+                  @click="exifExpanded = false"
+                  class="p-1.5 hover:bg-white/10 rounded-lg transition-colors"
+                >
+                  <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+
+              <!-- Content -->
+              <div class="p-4 space-y-3 text-xs overflow-y-auto custom-scrollbar" style="max-height: calc(85vh - 64px);">
+                <!-- 相机信息 -->
+                <div class="space-y-2">
+                  <div class="flex items-center gap-2 mb-2 pb-2 border-b border-white/10">
+                    <div class="w-6 h-6 rounded-lg bg-white/10 flex items-center justify-center">
+                      <svg class="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                      </svg>
+                    </div>
+                    <span class="font-semibold text-white text-sm">相机信息</span>
+                  </div>
+                  <div class="flex justify-between items-center py-1">
+                    <span class="text-white/60">品牌</span>
+                    <span :class="currentExif.Make ? 'text-white font-medium' : 'text-white/40'">
+                      {{ currentExif.Make || '未找到' }}
+                    </span>
+                  </div>
+                  <div class="flex justify-between items-center py-1">
+                    <span class="text-white/60">型号</span>
+                    <span :class="currentExif.Model ? 'text-white font-medium' : 'text-white/40'">
+                      {{ currentExif.Model || '未找到' }}
+                    </span>
+                  </div>
+                  <div class="flex justify-between items-center py-1">
+                    <span class="text-white/60">镜头</span>
+                    <span :class="currentExif.LensModel ? 'text-white font-medium' : 'text-white/40'">
+                      {{ currentExif.LensModel || '未找到' }}
+                    </span>
+                  </div>
+                </div>
+
+                <!-- 拍摄参数 -->
+                <div class="space-y-2">
+                  <div class="flex items-center gap-2 mb-2 pb-2 border-b border-white/10">
+                    <div class="w-6 h-6 rounded-lg bg-primary/20 flex items-center justify-center">
+                      <svg class="w-3.5 h-3.5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                      </svg>
+                    </div>
+                    <span class="font-semibold text-white text-sm">拍摄参数</span>
+                  </div>
+                  <div class="flex justify-between items-center py-1">
+                    <span class="text-white/60">焦距</span>
+                    <span :class="currentExif.FocalLength ? 'text-white font-medium' : 'text-white/40'">
+                      {{ currentExif.FocalLength ? `${currentExif.FocalLength}mm` : '未找到' }}
+                    </span>
+                  </div>
+                  <div class="flex justify-between items-center py-1">
+                    <span class="text-white/60">光圈</span>
+                    <span :class="currentExif.FNumber ? 'text-white font-medium' : 'text-white/40'">
+                      {{ currentExif.FNumber ? `f/${currentExif.FNumber}` : '未找到' }}
+                    </span>
+                  </div>
+                  <div class="flex justify-between items-center py-1">
+                    <span class="text-white/60">快门</span>
+                    <span :class="currentExif.ExposureTime ? 'text-white font-medium' : 'text-white/40'">
+                      {{ formatShutter(currentExif.ExposureTime) }}
+                    </span>
+                  </div>
+                  <div class="flex justify-between items-center py-1">
+                    <span class="text-white/60">ISO</span>
+                    <span :class="currentExif.ISO ? 'text-white font-medium' : 'text-white/40'">
+                      {{ currentExif.ISO ? `ISO ${currentExif.ISO}` : '未找到' }}
+                    </span>
+                  </div>
+                </div>
+
+                <!-- 其他信息 -->
+                <div class="space-y-2">
+                  <div class="flex items-center gap-2 mb-2 pb-2 border-b border-white/10">
+                    <div class="w-6 h-6 rounded-lg bg-white/10 flex items-center justify-center">
+                      <svg class="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                    </div>
+                    <span class="font-semibold text-white text-sm">其他信息</span>
+                  </div>
+                  <div class="flex justify-between items-center py-1">
+                    <span class="text-white/60">拍摄时间</span>
+                    <span :class="currentExif.DateTimeOriginal ? 'text-white font-medium text-[10px]' : 'text-white/40'">
+                      {{ formatDateTime(currentExif.DateTimeOriginal) }}
+                    </span>
+                  </div>
+                  <div class="flex justify-between items-center py-1">
+                    <span class="text-white/60">图片尺寸</span>
+                    <span :class="(currentExif.ImageWidth && currentExif.ImageHeight) ? 'text-white font-medium' : 'text-white/40'">
+                      {{ (currentExif.ImageWidth && currentExif.ImageHeight) ? `${currentExif.ImageWidth} × ${currentExif.ImageHeight}` : '未找到' }}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </Transition>
+      </Teleport>
     </div>
 
     <!-- Thumbnails Carousel - 优化样式 -->
@@ -94,6 +260,41 @@ const emit = defineEmits<{
 
 // 缩略图容器引用
 const thumbnailContainer = ref<HTMLElement | null>(null)
+
+// EXIF 信息展开状态
+const exifExpanded = ref(false)
+
+// 当前图片的 EXIF 数据
+const currentExif = computed(() => {
+  const currentFile = props.files[props.currentIndex]
+  if (!currentFile || !props.exifCache) return null
+  return props.exifCache.get(currentFile) || null
+})
+
+// 格式化快门速度
+function formatShutter(exposureTime?: number): string {
+  if (!exposureTime) return '未找到'
+  if (exposureTime < 1) {
+    return `1/${Math.round(1 / exposureTime)}s`
+  }
+  return `${exposureTime}s`
+}
+
+// 格式化日期时间
+function formatDateTime(datetime?: string): string {
+  if (!datetime) return '未找到'
+  try {
+    const parts = datetime.split(' ')
+    if (parts.length === 2) {
+      const date = parts[0].replace(/:/g, '-')
+      const time = parts[1].substring(0, 5)
+      return `${date} ${time}`
+    }
+    return datetime
+  } catch {
+    return datetime
+  }
+}
 
 // 预览缓存
 const originalUrls = ref<Map<File, string>>(new Map())
@@ -330,3 +531,46 @@ function openPreview() {
 }
 
 </script>
+
+<style scoped>
+/* EXIF 模态框动画 */
+.exif-modal-enter-active,
+.exif-modal-leave-active {
+  transition: opacity 0.25s ease;
+}
+
+.exif-modal-enter-active > div:last-child,
+.exif-modal-leave-active > div:last-child {
+  transition: all 0.25s ease;
+}
+
+.exif-modal-enter-from,
+.exif-modal-leave-to {
+  opacity: 0;
+}
+
+.exif-modal-enter-from > div:last-child,
+.exif-modal-leave-to > div:last-child {
+  transform: scale(0.95);
+  opacity: 0;
+}
+
+/* 自定义滚动条 */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 2px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.4);
+}
+</style>
