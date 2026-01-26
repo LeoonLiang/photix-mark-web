@@ -15,7 +15,7 @@
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
           </svg>
         </div>
-        <h1 class="text-5xl font-bold text-foreground mb-2">PhotoSign</h1>
+        <h1 class="text-5xl font-bold text-foreground mb-2">Photix Mark</h1>
         <p class="text-lg text-muted-foreground">为你的摄影作品，优雅地附上专属水印与参数。</p>
       </div>
 
@@ -68,7 +68,7 @@
           </svg>
         </div>
         <div>
-          <h1 class="font-bold text-lg text-foreground tracking-tight">PhotoSign</h1>
+          <h1 class="font-bold text-lg text-foreground tracking-tight">Photix Mark</h1>
           <p class="text-xs text-muted-foreground">{{ uploadedFiles.length }} 张图片</p>
         </div>
       </div>
