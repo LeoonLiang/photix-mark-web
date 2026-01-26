@@ -7,7 +7,7 @@ import type { TemplateConfig } from './types'
  * 下：品牌型号 + 参数居中
  */
 export const centeredWatermark: TemplateConfig = {
-  id: 'centered',
+  id: 'centeredWatermark',
   name: '居中样式',
   description: '上方Logo居中，下方信息居中排列，简洁优雅',
   preview: '/templates/centered.jpg',
@@ -49,6 +49,7 @@ export const centeredWatermark: TemplateConfig = {
           // ✨ 颜色配置（可选）
           // brand_color: '#000000',         // 品牌型号颜色（默认使用 text_color）
           params_color: '#666666',        // 参数颜色（默认使用 text_color）
+          params_vertical_align: 0.6,  // ✨
 
           // ✨ 参数间距配置（可选）
           params_spacing: 2,              // 参数之间的空格数量（默认 1）

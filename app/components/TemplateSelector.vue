@@ -7,7 +7,7 @@
         :key="template.id"
         @click="$emit('select', template.id)"
         :class="[
-          'rounded-lg transition-all duration-200 overflow-hidden w-full border-2',
+          'transition-all duration-200 overflow-hidden w-full border-2',
           selectedId === template.id
             ? 'border-primary shadow-lg'
             : 'border-transparent hover:border-primary/50',
@@ -18,7 +18,7 @@
           <img
             :src="getTemplateImage(template.id)"
             :alt="template.name"
-            class="w-full h-auto block aspect-[3/2] object-cover"
+            class="w-full h-auto block aspect-[3/2] object-contain"
           />
           <!-- 选中指示器 -->
           <div
@@ -55,7 +55,7 @@
           :key="template.id"
           @click="$emit('select', template.id)"
           :class="[
-            'rounded-lg transition-all duration-200 overflow-hidden flex-shrink-0',
+            'transition-all duration-200 overflow-hidden flex-shrink-0',
             selectedId === template.id
               ? 'ring-2 ring-primary shadow-md'
               : 'opacity-70',
@@ -67,7 +67,7 @@
             <img
               :src="getTemplateImage(template.id)"
               :alt="template.name"
-              class="w-full h-auto block aspect-[3/2] object-cover"
+              class="w-full h-auto block aspect-[3/2] object-contain"
             />
             <!-- 选中指示器 -->
             <div
@@ -116,7 +116,10 @@ const templateImages: Record<string, string> = {
   'logoCentered': '/demo/2_logo居中.JPG',
   'blurBackground': '/demo/1_背景模糊.JPG',
   'nikonBlur': '/demo/6_尼康专用背景模糊.JPG',
-  'folderNameParams': '/demo/5_时间戳参数.JPG'
+  'folderNameParams': '/demo/5_时间戳参数.JPG',
+  'centeredWatermark': '/demo/8_居中样式.JPG',
+  'centeredWatermark2': '/demo/7_居中样式2.JPG',
+  'sidebarWatermark': '/demo/9_侧边栏样式.JPG'
 }
 
 function getTemplateImage(templateId: string): string | null {

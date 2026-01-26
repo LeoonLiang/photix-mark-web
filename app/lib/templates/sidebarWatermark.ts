@@ -6,7 +6,7 @@ import type { TemplateConfig } from './types'
  * 竖屏：上下布局（降级为居中样式）
  */
 export const sidebarWatermark: TemplateConfig = {
-  id: 'sidebar',
+  id: 'sidebarWatermark',
   name: '侧边栏样式',
   description: '左侧原图，右侧参数垂直排列，适合横屏图片',
   preview: '/templates/sidebar.jpg',

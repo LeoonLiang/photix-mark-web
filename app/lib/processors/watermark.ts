@@ -52,6 +52,56 @@ export class WatermarkProcessor extends ImageProcessor {
     // 文字垂直位置计算
     const textTopY = watermarkY + watermarkHeight / 2 - middleSpacing / 2
     const textBottomY = watermarkY + watermarkHeight / 2 + middleSpacing / 2
+    const textCenterY = watermarkY + watermarkHeight / 2  // ✨ 居中位置
+
+    // ✨ 预先检测左侧和右侧分别有几个元素
+    let hasLeftTop = false
+    let hasLeftBottom = false
+    let hasRightTop = false
+    let hasRightBottom = false
+
+    // 检测左上（品牌型号）
+    if (config.left_top) {
+      const parts = []
+      if (config.showBrand !== false && exif.Make) {
+        parts.push(exif.Make.replace('CORPORATION', '').trim())
+      }
+      if (config.showModel !== false && exif.Model) {
+        parts.push(exif.Model)
+      }
+      hasLeftTop = parts.length > 0
+    }
+
+    // 检测左下（镜头）
+    const showLens = config.showLens !== false
+    if (config.left_bottom && showLens) {
+      const text = this.renderTemplate(config.left_bottom.text || config.left_bottom, exif, config)
+      hasLeftBottom = !!text
+    }
+
+    // 检测右上（参数）
+    if (config.right_top) {
+      const parts = []
+      if (config.showFocalLength !== false && exif.FocalLength) parts.push('1')
+      if (config.showAperture !== false && exif.FNumber) parts.push('1')
+      if (config.showShutter !== false && exif.ExposureTime) parts.push('1')
+      if (config.showISO !== false && exif.ISO) parts.push('1')
+      hasRightTop = parts.length > 0
+    }
+
+    // 检测右下（时间）
+    const showDateTime = config.showDateTime !== false
+    if (config.right_bottom && showDateTime) {
+      const text = this.renderTemplate(config.right_bottom.text || config.right_bottom, exif, config)
+      hasRightBottom = !!text
+    }
+
+    // ✨ 计算左侧和右侧的元素数量
+    const leftCount = (hasLeftTop ? 1 : 0) + (hasLeftBottom ? 1 : 0)
+    const rightCount = (hasRightTop ? 1 : 0) + (hasRightBottom ? 1 : 0)
+
+    // ✨ 单个元素时的字体放大倍数（1.15倍）
+    const singleElementMultiplier = 1.15
 
     // 左侧起始位置
     const leftX = commonSpacing
@@ -74,14 +124,19 @@ export class WatermarkProcessor extends ImageProcessor {
       const text = parts.join(' ')
 
       if (text) {
+        // ✨ 如果左侧只有一个元素，居中显示且字体变大
+        const yPos = leftCount === 1 ? textCenterY : textTopY
+        const fontSize = leftCount === 1 ? largeFontSize * singleElementMultiplier : largeFontSize
+        const baseline = leftCount === 1 ? 'middle' : 'bottom'
+
         drawText(wCtx, {
           text,
           x: leftX,
-          y: textTopY,
+          y: yPos,
           align: 'left',
-          baseline: 'bottom',
+          baseline,
           color: parseColor(config.left_top.color || '#000000'),
-          fontSize: largeFontSize,
+          fontSize,
           fontWeight: config.left_top.is_bold ? '700' : '300',
           fontFamily: '"Alibaba PuHuiTi", Arial, sans-serif'
         })
@@ -89,18 +144,22 @@ export class WatermarkProcessor extends ImageProcessor {
     }
 
     // 左下（镜头）- 检查用户配置
-    const showLens = config.showLens !== false  // 默认显示
     if (config.left_bottom && showLens) {
       const text = this.renderTemplate(config.left_bottom.text || config.left_bottom, exif, config)
       if (text) {
+        // ✨ 如果左侧只有一个元素，居中显示且字体变大
+        const yPos = leftCount === 1 ? textCenterY : textBottomY
+        const fontSize = leftCount === 1 ? baseFontSize * singleElementMultiplier : baseFontSize
+        const baseline = leftCount === 1 ? 'middle' : 'top'
+
         drawText(wCtx, {
           text,
           x: leftX,
-          y: textBottomY,
+          y: yPos,
           align: 'left',
-          baseline: 'top',
+          baseline,
           color: parseColor(config.left_bottom.color || textColor),
-          fontSize: baseFontSize,
+          fontSize,
           fontFamily: '"Alibaba PuHuiTi", Arial, sans-serif'
         })
       }
@@ -189,7 +248,7 @@ export class WatermarkProcessor extends ImageProcessor {
     }
 
     // 右下（拍摄时间）
-    const showDateTime = config.showDateTime !== false
+    // showDateTime 已在前面声明
     if (config.right_bottom && showDateTime) {
       rightBottomText = this.renderTemplate(config.right_bottom.text || config.right_bottom, exif, config) || ''
     }
@@ -199,13 +258,27 @@ export class WatermarkProcessor extends ImageProcessor {
     let rightBottomX = rightX
 
     if (rightAlignment === 'left' && (rightTopText || rightBottomText)) {
-      // 测量文字宽度
+      // ✨ 计算实际使用的字体大小（考虑单元素时的放大）
+      const actualTopFontSize = rightCount === 1 ? baseFontSize * singleElementMultiplier : baseFontSize
+      const actualBottomFontSize = rightCount === 1 ? baseFontSize * singleElementMultiplier : baseFontSize
+
+      // 测量文字宽度（使用实际字体大小）
       const tempCanvas = createCanvas(100, 100)
       const tempCtx = tempCanvas.getContext('2d')!
 
-      tempCtx.font = `300 ${baseFontSize}px "Alibaba PuHuiTi", Arial, sans-serif`
-      const topWidth = rightTopText ? tempCtx.measureText(rightTopText).width : 0
-      const bottomWidth = rightBottomText ? tempCtx.measureText(rightBottomText).width : 0
+      // 测量上方文字
+      let topWidth = 0
+      if (rightTopText) {
+        tempCtx.font = `300 ${actualTopFontSize}px "Alibaba PuHuiTi", Arial, sans-serif`
+        topWidth = tempCtx.measureText(rightTopText).width
+      }
+
+      // 测量下方文字
+      let bottomWidth = 0
+      if (rightBottomText) {
+        tempCtx.font = `300 ${actualBottomFontSize}px "Alibaba PuHuiTi", Arial, sans-serif`
+        bottomWidth = tempCtx.measureText(rightBottomText).width
+      }
 
       // 取两者中较小的 X 位置（更靠左），实现左对齐效果
       const minX = Math.min(
@@ -219,14 +292,19 @@ export class WatermarkProcessor extends ImageProcessor {
 
     // 绘制右上文字
     if (rightTopText && config.right_top) {
+      // ✨ 如果右侧只有一个元素，居中显示且字体变大
+      const yPos = rightCount === 1 ? textCenterY : textTopY
+      const fontSize = rightCount === 1 ? baseFontSize * singleElementMultiplier : baseFontSize
+      const baseline = rightCount === 1 ? 'middle' : 'bottom'
+
       drawText(wCtx, {
         text: rightTopText,
         x: rightAlignment === 'left' ? rightTopX : rightX,
-        y: textTopY,
+        y: yPos,
         align: rightAlignment === 'left' ? 'left' : 'right',
-        baseline: 'bottom',
+        baseline,
         color: parseColor(config.right_top.color || textColor),
-        fontSize: baseFontSize,
+        fontSize,
         fontWeight: config.right_top.is_bold ? '700' : '300',
         fontFamily: '"Alibaba PuHuiTi", Arial, sans-serif'
       })
@@ -234,14 +312,19 @@ export class WatermarkProcessor extends ImageProcessor {
 
     // 绘制右下文字
     if (rightBottomText) {
+      // ✨ 如果右侧只有一个元素，居中显示且字体变大
+      const yPos = rightCount === 1 ? textCenterY : textBottomY
+      const fontSize = rightCount === 1 ? baseFontSize * singleElementMultiplier : baseFontSize
+      const baseline = rightCount === 1 ? 'middle' : 'top'
+
       drawText(wCtx, {
         text: rightBottomText,
         x: rightAlignment === 'left' ? rightBottomX : rightX,
-        y: textBottomY,
+        y: yPos,
         align: rightAlignment === 'left' ? 'left' : 'right',
-        baseline: 'top',
+        baseline,
         color: parseColor(config.right_bottom?.color || textColor),
-        fontSize: baseFontSize,
+        fontSize,
         fontFamily: '"Alibaba PuHuiTi", Arial, sans-serif'
       })
     }

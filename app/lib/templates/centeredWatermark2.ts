@@ -7,7 +7,7 @@ import type { TemplateConfig } from './types'
  * 下：品牌型号 + 参数居中
  */
 export const centeredWatermark2: TemplateConfig = {
-  id: 'centered2',
+  id: 'centeredWatermark2',
   name: '居中样式2',
   description: 'Logo居中，下方信息居中排列，简洁优雅',
   preview: '/templates/centered.jpg',
