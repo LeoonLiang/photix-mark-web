@@ -27,7 +27,8 @@ const BRAND_LOGO_MAP: Record<string, string> = {
   'DJI': '/logos/DJI.png',
   'APPLE': '/logos/apple.png',
   'Apple': '/logos/apple.png',
-  'HUAWEI': '/logos/xmage.png'
+  'HUAWEI': '/logos/xmage.png',
+  'Xiaomi': '/logos/leica_logo.png',
 }
 
 /**

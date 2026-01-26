@@ -175,7 +175,8 @@ export class WatermarkProcessor extends ImageProcessor {
       ? canvas.width * config.logo_right_margin
       : commonSpacing * 1.5
 
-    let rightX = canvas.width - commonSpacing
+    // 右侧起始 X 位置：无论是否显示 Logo，都使用相同的右边距
+    let rightX = canvas.width - logoRightMargin
 
     // 绘制 Logo
     if (config.right_logo && showLogo) {

@@ -9,6 +9,11 @@ export default defineNuxtConfig({
     classSuffix: ''
   },
 
+  devServer: {
+    host: '0.0.0.0',
+    port: 3000
+  },
+
   app: {
     head: {
       title: 'PhotoSign - 影签',

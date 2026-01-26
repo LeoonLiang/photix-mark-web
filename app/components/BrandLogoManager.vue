@@ -264,7 +264,8 @@ function getLogoUrl(brand: string): string | null {
     'hasselblad': 'hasselblad',
     'dji': 'DJI',
     'apple': 'apple',
-    'huawei': 'xmage'
+    'huawei': 'xmage',
+    'xiaomi': 'leica_logo'
   }
 
   const mappedBrand = brandMap[normalizedBrand]
