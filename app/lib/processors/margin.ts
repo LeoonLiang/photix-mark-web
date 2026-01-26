@@ -19,10 +19,25 @@ export class MarginProcessor extends ImageProcessor {
     }
 
     // 计算边距（支持百分比或固定像素）
-    const bottomMargin = this.calculateMargin(config.bottom_margin, canvas.height)
-    const topMargin = this.calculateMargin(config.top_margin, canvas.height)
-    const leftMargin = this.calculateMargin(config.left_margin, canvas.width)
-    const rightMargin = this.calculateMargin(config.right_margin, canvas.width)
+    // ✨ 使用统一的参考尺寸（取宽高中较小值），确保四周边距一致
+    const reference = Math.min(canvas.width, canvas.height)
+
+    // 如果设置了 size，则四周统一边距
+    const defaultSize = config.size !== undefined ? config.size : 0
+    const marginSize = this.calculateMargin(defaultSize, reference)
+
+    const bottomMargin = config.bottom_margin !== undefined
+      ? this.calculateMargin(config.bottom_margin, reference)
+      : marginSize
+    const topMargin = config.top_margin !== undefined
+      ? this.calculateMargin(config.top_margin, reference)
+      : marginSize
+    const leftMargin = config.left_margin !== undefined
+      ? this.calculateMargin(config.left_margin, reference)
+      : marginSize
+    const rightMargin = config.right_margin !== undefined
+      ? this.calculateMargin(config.right_margin, reference)
+      : marginSize
 
     // 创建新 canvas（增加边距）
     const marginCanvas = createCanvas(
@@ -32,7 +47,7 @@ export class MarginProcessor extends ImageProcessor {
     const mCtx = marginCanvas.getContext('2d')!
 
     // 填充背景色（默认白色）
-    mCtx.fillStyle = config.margin_color || 'white'
+    mCtx.fillStyle = config.margin_color || config.color || 'white'
     mCtx.fillRect(0, 0, marginCanvas.width, marginCanvas.height)
 
     // 绘制原图

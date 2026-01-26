@@ -172,3 +172,61 @@ export function parseColor(color: string | number[]): string {
 
   return color as string
 }
+
+/**
+ * 绘制圆角矩形
+ */
+export interface DrawRoundedRectOptions {
+  x: number
+  y: number
+  width: number
+  height: number
+  radius: number
+  fillColor?: string
+  strokeColor?: string
+  strokeWidth?: number
+}
+
+export function drawRoundedRect(ctx: CanvasRenderingContext2D, options: DrawRoundedRectOptions) {
+  const {
+    x,
+    y,
+    width,
+    height,
+    radius,
+    fillColor,
+    strokeColor,
+    strokeWidth = 1
+  } = options
+
+  ctx.save()
+  ctx.beginPath()
+
+  // 绘制圆角矩形路径
+  ctx.moveTo(x + radius, y)
+  ctx.lineTo(x + width - radius, y)
+  ctx.quadraticCurveTo(x + width, y, x + width, y + radius)
+  ctx.lineTo(x + width, y + height - radius)
+  ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height)
+  ctx.lineTo(x + radius, y + height)
+  ctx.quadraticCurveTo(x, y + height, x, y + height - radius)
+  ctx.lineTo(x, y + radius)
+  ctx.quadraticCurveTo(x, y, x + radius, y)
+  ctx.closePath()
+
+  // 填充
+  if (fillColor) {
+    ctx.fillStyle = parseColor(fillColor)
+    ctx.fill()
+  }
+
+  // 描边
+  if (strokeColor) {
+    ctx.strokeStyle = parseColor(strokeColor)
+    ctx.lineWidth = strokeWidth
+    ctx.stroke()
+  }
+
+  ctx.restore()
+}
+

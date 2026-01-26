@@ -52,11 +52,7 @@
 
       <!-- Upload Card -->
       <Card class="bg-card/80 backdrop-blur-xl shadow-2xl shadow-primary/10">
-        <CardContent class="p-8">
-          <ClientOnly>
             <ImageUploader @upload="handleUpload" />
-          </ClientOnly>
-        </CardContent>
       </Card>
     </div>
   </div>

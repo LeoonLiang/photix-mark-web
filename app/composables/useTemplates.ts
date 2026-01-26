@@ -6,7 +6,10 @@ import {
   logoCentered,
   blurBackground,
   nikonBlur,
-  folderNameParams
+  folderNameParams,
+  centeredWatermark,
+  sidebarWatermark,
+  centeredWatermark2
 } from '~/lib/templates'
 
 /**
@@ -23,7 +26,10 @@ export function useTemplates() {
     logoCentered,
     blurBackground,
     nikonBlur,
-    folderNameParams
+    folderNameParams,
+    centeredWatermark,
+    sidebarWatermark,
+    centeredWatermark2
   ])
 
   /**

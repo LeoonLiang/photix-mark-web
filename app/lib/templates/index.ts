@@ -8,5 +8,8 @@ export { logoCentered } from './logoCentered'
 export { blurBackground } from './blurBackground'
 export { nikonBlur } from './nikonBlur'
 export { folderNameParams } from './folderNameParams'
+export { centeredWatermark } from './centeredWatermark'
+export { sidebarWatermark } from './sidebarWatermark'
+export { centeredWatermark2 } from './centeredWatermark2'
 
 export * from './types'

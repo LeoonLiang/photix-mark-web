@@ -19,6 +19,7 @@ import { MultiRichTextProcessor } from './multiRichText'
 import { ConcatProcessor } from './concat'
 import { ResizeProcessor } from './resize'
 import { CropProcessor } from './crop'
+import { FlexLayoutProcessor } from './flexLayout'
 import { registerProcessor } from './registry'
 
 /**
@@ -38,6 +39,7 @@ export function initProcessors() {
   registerProcessor(ConcatProcessor)
   registerProcessor(ResizeProcessor)
   registerProcessor(CropProcessor)
+  registerProcessor(FlexLayoutProcessor)
 
   console.log('[Processors] All processors initialized')
 }

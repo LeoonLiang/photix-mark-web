@@ -18,7 +18,7 @@ export const folderNameParams: TemplateConfig = {
       showDateTime: true,
       height: 0.03,
       trim: true,
-      color: '(232,141,52)'
+      color: '(255,255,255)'
     },
     // 2. 生成拍摄参数文本
     {
@@ -30,7 +30,7 @@ export const folderNameParams: TemplateConfig = {
       showISO: true,
       height: 0.03,
       trim: true,
-      color: '(232,141,52)'
+      color: '(255,255,255)'
     },
     // 3. 横向合并时间戳和参数
     {
