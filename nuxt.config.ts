@@ -21,7 +21,7 @@ export default defineNuxtConfig({
   site: {
     url: 'https://mark.photix.cc',
     name: 'Photix Mark',
-    description: '为你的摄影作品，优雅地附上专属水印与参数。纯前端处理，隐私安全，支持批量操作和实时预览。',
+    description: 'Photix Mark, 一个免费的在线相机水印生成器。为您的摄影作品优雅地附上专属水印, 支持批量处理，自动读取EXIF信息。支持佳能、尼康、索尼、富士等多种相机品牌。纯前端处理，无需上传，保护您的隐私安全。',
     defaultLocale: 'zh-CN'
   },
 
@@ -30,21 +30,21 @@ export default defineNuxtConfig({
       htmlAttrs: {
         lang: 'zh-CN'
       },
-      title: 'Photix Mark',
-      titleTemplate: '%s | Photix Mark',
+      title: 'Photix Mark - 免费在线相机水印生成器',
+      titleTemplate: '%s | 批量添加EXIF水印',
       meta: [
         { charset: 'utf-8' },
         { name: 'viewport', content: 'width=device-width, initial-scale=1' },
-        { name: 'description', content: '为你的摄影作品，优雅地附上专属水印与参数。纯前端处理，隐私安全，支持批量操作和实时预览。' },
-        { name: 'keywords', content: '摄影水印,图片水印,批量水印,EXIF信息,摄影参数,照片处理,在线工具,纯前端' },
+        { name: 'description', content: 'Photix Mark, 一个免费的在线相机水印生成器。为您的摄影作品优雅地附上专属水印, 支持批量处理，自动读取EXIF信息。支持佳能、尼康、索尼、富士等多种相机品牌。纯前端处理，无需上传，保护您的隐私安全。' },
+        { name: 'keywords', content: '图片水印, 相机水印, EXIF水印, 批量加水印, 照片加水印, 摄影水印, 水印生成器, 佳能, 尼康, 索尼, 富士, 徕卡, 哈苏, 奥林巴斯, Nuxt, 纯前端, 开源' },
         { name: 'author', content: 'Photix Mark' },
         { name: 'theme-color', content: '#f59e0b' },
 
         // Open Graph
         { property: 'og:type', content: 'website' },
         { property: 'og:site_name', content: 'Photix Mark' },
-        { property: 'og:title', content: 'Photix Mark' },
-        { property: 'og:description', content: '为你的摄影作品，优雅地附上专属水印与参数。纯前端处理，隐私安全，支持批量操作和实时预览。' },
+        { property: 'og:title', content: 'Photix Mark - 免费在线相机水印生成器' },
+        { property: 'og:description', content: 'Photix Mark, 一个免费的在线相机水印生成器。为您的摄影作品优雅地附上专属水印, 支持批量处理，自动读取EXIF信息。支持佳能、尼康、索尼、富士等多种相机品牌。纯前端处理，无需上传，保护您的隐私安全。' },
         { property: 'og:image', content: 'https://mark.photix.cc/og-image.jpg' },
         { property: 'og:image:width', content: '1200' },
         { property: 'og:image:height', content: '630' },
@@ -52,8 +52,8 @@ export default defineNuxtConfig({
 
         // Twitter Card
         { name: 'twitter:card', content: 'summary_large_image' },
-        { name: 'twitter:title', content: 'Photix Mark' },
-        { name: 'twitter:description', content: '为你的摄影作品，优雅地附上专属水印与参数。纯前端处理，隐私安全，支持批量操作和实时预览。' },
+        { name: 'twitter:title', content: 'Photix Mark - 免费在线相机水印生成器' },
+        { name: 'twitter:description', content: 'Photix Mark, 一个免费的在线相机水印生成器。为您的摄影作品优雅地附上专属水印, 支持批量处理，自动读取EXIF信息。支持佳能、尼康、索尼、富士等多种相机品牌。纯前端处理，无需上传，保护您的隐私安全。' },
         { name: 'twitter:image', content: 'https://mark.photix.cc/og-image.jpg' },
 
         // 移动端优化
