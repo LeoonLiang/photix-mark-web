@@ -1,6 +1,22 @@
 # Photix Mark Web
 
-> 纯前端图片水印批量处理工具 - Nuxt 3 版本
+<div align="center">
+  <a href="https://mark.photix.cc" target="_blank">
+    <img src="./public/og-image.jpg" alt="Photix Mark Web" width="400">
+  </a>
+  <br>
+  <p><strong>批量为您的照片添加专业水印</strong></p>
+  <p><strong>Batch process and add professional watermarks to your photos.</strong></p>
+  <p>
+    <a href="https://mark.photix.cc"><strong>在线体验 (Live Demo)</strong></a>
+  </p>
+</div>
+
+<p align="center">
+  <a href="./LICENSE"><img src="https://img.shields.io/github/license/dsleoon/photix-mark-web?style=flat-square" alt="License"></a>
+  <img src="https://img.shields.io/github/stars/dsleoon/photix-mark-web?style=flat-square" alt="Stars">
+  <img src="https://img.shields.io/github/forks/dsleoon/photix-mark-web?style=flat-square" alt="Forks">
+</p>
 
 ## 功能特性
 
