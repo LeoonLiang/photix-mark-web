@@ -53,5 +53,5 @@ export async function downloadImages(
 function generateFileName(originalName: string): string {
   const ext = originalName.split('.').pop() || 'jpg'
   const basename = originalName.replace(/\.[^/.]+$/, '')
-  return `${basename}_watermarked.${ext}`
+  return `${basename}.${ext}`
 }
