@@ -75,7 +75,7 @@ We welcome all contributions! Whether you're fixing a bug, adding a feature, or 
 
 ### 📧 Contact
 
-- **Author**: Leon
+- **Author**: Leoonliang
 - **Email**: dsleoon@gmail.com
 - **Website**: [mark.photix.cc](https://mark.photix.cc)
 
