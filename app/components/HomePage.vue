@@ -1,21 +1,13 @@
 <template>
   <!-- 欢迎页 -->
   <div class="relative min-h-screen bg-background overflow-y-auto">
-    <!-- Background Image -->
-    <div class="fixed inset-0 z-0">
-      <img src="/demo.jpg" alt="Showcase" class="w-full h-full object-cover blur-sm opacity-20">
-      <div class="absolute inset-0 bg-background/50"></div>
-    </div>
-
     <!-- Hero Section -->
     <div class="relative z-10 flex flex-col items-center justify-center min-h-screen p-4">
       <div class="max-w-2xl w-full bg-background/50 backdrop-blur-md p-4 md:p-8 rounded-2xl border border-border animate-fade-in-up">
         <!-- Logo & Title -->
         <div class="text-center mb-4 md:mb-8">
-          <div class="w-14 h-14 md:w-20 md:h-20 bg-gradient-to-br from-primary to-amber-600 rounded-2xl flex items-center justify-center text-white mx-auto mb-2 md:mb-4 shadow-2xl shadow-primary/20">
-            <svg class="w-8 h-8 md:w-12 md:h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-            </svg>
+          <div class="w-14 h-14 md:w-20 md:h-20 flex items-center justify-center mx-auto mb-2 md:mb-4">
+            <img src="/logo.svg" alt="Photix Mark Logo" class="w-full h-full object-contain" />
           </div>
           <h1 class="text-2xl md:text-5xl font-bold text-foreground mb-1 md:mb-2">Photix Mark</h1>
           <p class="text-sm md:text-lg text-muted-foreground mb-2 md:mb-4">为你的摄影作品，优雅地附上专属水印与参数</p>

@@ -1,0 +1,26 @@
+{
+  "name": "Photix Mark - 免费在线相机水印生成器",
+  "short_name": "Photix Mark",
+  "description": "为你的摄影作品，优雅地附上专属水印与参数",
+  "icons": [
+    {
+      "src": "/android-chrome-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/android-chrome-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "theme_color": "#f59e0b",
+  "background_color": "#ffffff",
+  "display": "standalone",
+  "start_url": "/",
+  "scope": "/",
+  "orientation": "portrait-primary",
+  "lang": "zh-CN"
+}
