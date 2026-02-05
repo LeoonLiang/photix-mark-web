@@ -12,9 +12,10 @@
 </div>
 
 <p align="center">
-  <a href="./LICENSE"><img src="https://img.shields.io/github/license/dsleoon/photix-mark-web?style=flat-square" alt="License"></a>
-  <img src="https://img.shields.io/github/stars/dsleoon/photix-mark-web?style=flat-square" alt="Stars">
-  <img src="https://img.shields.io/github/forks/dsleoon/photix-mark-web?style=flat-square" alt="Forks">
+  <a href="./LICENSE"><img src="https://img.shields.io/github/license/LeoonLiang/photix-mark-web?style=flat-square" alt="License"></a>
+  <a href="https://github.com/LeoonLiang/photix-mark-web/stargazers"><img src="https://img.shields.io/github/stars/LeoonLiang/photix-mark-web?style=flat-square" alt="Stars"></a>
+  <a href="https://github.com/LeoonLiang/photix-mark-web/network/members"><img src="https://img.shields.io/github/forks/LeoonLiang/photix-mark-web?style=flat-square" alt="Forks"></a>
+  <img src="https://img.shields.io/badge/开源-MIT-blue?style=flat-square" alt="Open Source">
 </p>
 
 ---
@@ -45,7 +46,7 @@
 
 #### 1. 克隆项目
 ```bash
-git clone https://github.com/dsleoon/photix-mark-web.git
+git clone https://github.com/LeoonLiang/photix-mark-web.git
 cd photix-mark-web
 ```
 
@@ -68,9 +69,25 @@ npm run dev
 4.  **预览效果**: 使用网格或轮播视图检查最终效果。
 5.  **开始处理**: 点击“开始处理”按钮，生成并下载带水印的照片。
 
+### ⭐ 支持项目
+
+如果这个项目对您有帮助，请给我们一个 Star ⭐️！这将是对我们最大的鼓励。
+
+<a href="https://github.com/LeoonLiang/photix-mark-web/stargazers" target="_blank">
+  <img src="https://img.shields.io/github/stars/LeoonLiang/photix-mark-web?style=social" alt="GitHub Stars">
+</a>
+
 ### 🤝 如何贡献
 
-我们欢迎任何形式的贡献！无论是修复 Bug、增加新功能还是改进文档，都非常感谢。请随时提交 Issue 或 Pull Request。让我们一起完善它！
+我们欢迎任何形式的贡献！无论是修复 Bug、增加新功能还是改进文档，都非常感谢。
+
+1. Fork 本项目
+2. 创建您的特性分支 (`git checkout -b feature/AmazingFeature`)
+3. 提交您的更改 (`git commit -m 'Add some AmazingFeature'`)
+4. 推送到分支 (`git push origin feature/AmazingFeature`)
+5. 打开一个 Pull Request
+
+请随时提交 Issue 或 Pull Request。让我们一起完善它！
 
 ### 📧 联系方式
 
