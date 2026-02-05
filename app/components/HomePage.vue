@@ -272,25 +272,27 @@
               完全没有限制！像素大小、分辨率、颜色空间等都不受任何限制， 完全原图导出。
             </p>
           </details>
-        </div>
 
-        <!-- 问题反馈提示 -->
-        <div class="mt-8 md:mt-12 text-center">
-          <p class="text-sm text-muted-foreground mb-3">没有找到您的问题？</p>
-          <a
-            href="https://github.com/LeoonLiang/photix-mark-web/issues"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="inline-flex items-center gap-2 px-4 py-2 bg-card hover:bg-muted/50 border border-border rounded-lg text-sm text-foreground transition-colors"
-          >
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
-            </svg>
-            <span>提交问题反馈</span>
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-            </svg>
-          </a>
+          <!-- FAQ 6 - 问题反馈 -->
+          <details class="bg-card backdrop-blur-md p-4 md:p-8 rounded-xl border border-border group shadow-sm hover:shadow-md transition-shadow">
+            <summary class="text-sm md:text-base font-semibold text-foreground cursor-pointer list-none flex justify-between items-center">
+              <span>有问题或想要新的水印样式？</span>
+              <svg class="w-5 h-5 text-muted-foreground group-open:rotate-180 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+              </svg>
+            </summary>
+            <div class="mt-3 md:mt-6 text-sm md:text-base text-muted-foreground">
+              <p class="mb-3">我们非常欢迎您的反馈！无论是遇到问题还是有新的想法，都可以告诉我们：</p>
+              <ul class="space-y-2 list-disc list-inside ml-4">
+                <li><strong>使用问题</strong>：遇到 Bug 或使用困难，请告诉我们具体情况</li>
+                <li><strong>想要新的水印样式</strong>：可以提交参考图片或描述您期望的效果</li>
+                <li><strong>功能建议</strong>：有任何改进想法都欢迎分享</li>
+              </ul>
+              <p class="mt-4">
+                👉 前往 <a href="https://github.com/LeoonLiang/photix-mark-web/issues" target="_blank" rel="noopener noreferrer" class="text-primary hover:underline font-medium">GitHub Issues</a> 提交您的反馈，可以附上图片说明。本项目完全开源，也欢迎贡献代码！
+              </p>
+            </div>
+          </details>
         </div>
       </div>
     </div>
