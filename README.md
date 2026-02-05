@@ -89,6 +89,14 @@ npm run dev
 
 请随时提交 Issue 或 Pull Request。让我们一起完善它！
 
+### 💬 问题反馈
+
+遇到问题或有建议？欢迎通过以下方式反馈：
+
+- 🐛 **Bug 报告**：[提交 Issue](https://github.com/LeoonLiang/photix-mark-web/issues/new)
+- 💡 **功能建议**：[功能请求](https://github.com/LeoonLiang/photix-mark-web/issues/new)
+- 📖 **查看已知问题**：[Issues 列表](https://github.com/LeoonLiang/photix-mark-web/issues)
+
 ### 📧 联系方式
 
 - **作者**: Leoonliang
