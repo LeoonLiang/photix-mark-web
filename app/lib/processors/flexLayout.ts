@@ -500,6 +500,10 @@ export class FlexLayoutProcessor extends ImageProcessor {
   private buildParams(exif: any, config: any, spacing?: number): string {
     const parts = []
 
+    // 镜头信息
+    if (config.showLens !== false && exif.LensModel) {
+      parts.push(exif.LensModel)
+    }
     if (config.showFocalLength !== false && exif.FocalLength) {
       parts.push(`${exif.FocalLength}mm`)
     }
@@ -514,6 +518,10 @@ export class FlexLayoutProcessor extends ImageProcessor {
     }
     if (config.showISO !== false && exif.ISO) {
       parts.push(`ISO${exif.ISO}`)
+    }
+    // 拍摄时间
+    if (config.showDateTime !== false && exif.DateTimeOriginal) {
+      parts.push(this.formatDateTime(exif.DateTimeOriginal))
     }
 
     // ✨ 可配置的参数间距（默认 1 个空格）
@@ -696,5 +704,29 @@ export class FlexLayoutProcessor extends ImageProcessor {
       return value * reference
     }
     return value
+  }
+
+  /**
+   * 格式化日期时间
+   * 将 Date 对象或 "2026:01:23 14:30:00" 转换为 "2026-01-23 14:30"
+   */
+  private formatDateTime(value: any): string {
+    // 如果是 Date 对象
+    if (value instanceof Date) {
+      const year = value.getFullYear()
+      const month = String(value.getMonth() + 1).padStart(2, '0')
+      const day = String(value.getDate()).padStart(2, '0')
+      const hour = String(value.getHours()).padStart(2, '0')
+      const minute = String(value.getMinutes()).padStart(2, '0')
+      return `${year}-${month}-${day} ${hour}:${minute}`
+    }
+
+    // 如果是字符串
+    const dateStr = String(value)
+    // EXIF 格式: "2026:01:23 14:30:00"
+    // 目标格式: "2026-01-23 14:30"
+    return dateStr
+      .replace(/^(\d{4}):(\d{2}):(\d{2})/, '$1-$2-$3')
+      .replace(/:\d{2}$/, '')
   }
 }
