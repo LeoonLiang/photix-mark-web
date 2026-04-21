@@ -23,7 +23,7 @@
       </div>
 
       <div class="ml-auto">
-        <Button @click="triggerFileInput" variant="outline" size="sm">
+        <Button @click="triggerReplaceFile" variant="outline" size="sm">
           <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
           </svg>
@@ -35,7 +35,7 @@
     <!-- Mobile Header - 移动端简化版 -->
     <header class="bg-background/95 backdrop-blur-xl border-b border-border h-12 flex-shrink-0 flex items-center justify-between px-3 shadow-sm lg:hidden">
       <!-- 返回按钮 -->
-      <button @click="triggerFileInput" class="p-2 hover:bg-muted rounded-lg transition-colors">
+      <button @click="triggerReplaceFile" class="p-2 hover:bg-muted rounded-lg transition-colors">
         <svg class="w-5 h-5 text-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
         </svg>
@@ -79,7 +79,7 @@
                 :custom-logos="customLogos"
                 :exif-cache="exifCache"
                 @update:current-index="currentIndex = $event"
-                @upload="triggerFileInput"
+                @upload="triggerAddFile"
                 @delete="handleDeleteImage"
               />
             </ClientOnly>
@@ -207,7 +207,7 @@
                           :custom-logos="customLogos"
                           :exif-cache="exifCache"
                           @update:current-index="currentIndex = $event"
-                          @upload="triggerFileInput"
+                          @upload="triggerAddFile"
                           @delete="handleDeleteImage"
                         />
                       </ClientOnly>        </div>
@@ -654,8 +654,18 @@ async function handleLogoUploaded(brand: string) {
   }
 }
 
-// 触发文件选择
-function triggerFileInput() {
+// 文件选择模式标志
+const fileSelectMode = ref<'add' | 'replace'>('replace')
+
+// 触发添加文件选择
+function triggerAddFile() {
+  fileSelectMode.value = 'add'
+  fileInput.value?.click()
+}
+
+// 触发替换文件选择
+function triggerReplaceFile() {
+  fileSelectMode.value = 'replace'
   fileInput.value?.click()
 }
 
@@ -663,8 +673,13 @@ function triggerFileInput() {
 function handleFileSelect(event: Event) {
   const target = event.target as HTMLInputElement
   if (target.files && target.files.length > 0) {
-    // 触发替换事件，让父组件替换现有文件
-    emit('replace', Array.from(target.files))
+    if (fileSelectMode.value === 'add') {
+      // 添加模式：触发重新上传事件，保留现有文件
+      emit('reupload', Array.from(target.files))
+    } else {
+      // 替换模式：触发替换事件，清空现有文件
+      emit('replace', Array.from(target.files))
+    }
     // 清空 input 以便下次可以选择相同的文件
     target.value = ''
   }
