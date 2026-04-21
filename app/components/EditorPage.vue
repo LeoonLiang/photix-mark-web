@@ -1,5 +1,15 @@
 <template>
   <div class="h-screen flex flex-col bg-background overflow-hidden">
+    <!-- 隐藏的文件输入元素 -->
+    <input
+      ref="fileInput"
+      type="file"
+      multiple
+      accept="image/*"
+      @change="handleFileSelect"
+      class="hidden"
+    />
+
     <!-- Header - 桌面端 -->
     <header class="bg-background/80 backdrop-blur-xl border-b border-border h-16 flex-shrink-0 items-center px-6 shadow-sm hidden lg:flex">
       <div class="flex items-center gap-3">
@@ -13,7 +23,7 @@
       </div>
 
       <div class="ml-auto">
-        <Button @click="$emit('reset')" variant="outline" size="sm">
+        <Button @click="triggerFileInput" variant="outline" size="sm">
           <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
           </svg>
@@ -25,7 +35,7 @@
     <!-- Mobile Header - 移动端简化版 -->
     <header class="bg-background/95 backdrop-blur-xl border-b border-border h-12 flex-shrink-0 flex items-center justify-between px-3 shadow-sm lg:hidden">
       <!-- 返回按钮 -->
-      <button @click="$emit('reset')" class="p-2 hover:bg-muted rounded-lg transition-colors">
+      <button @click="triggerFileInput" class="p-2 hover:bg-muted rounded-lg transition-colors">
         <svg class="w-5 h-5 text-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
         </svg>
@@ -69,6 +79,8 @@
                 :custom-logos="customLogos"
                 :exif-cache="exifCache"
                 @update:current-index="currentIndex = $event"
+                @upload="triggerFileInput"
+                @delete="handleDeleteImage"
               />
             </ClientOnly>
           </div>
@@ -186,18 +198,19 @@
       <div class="flex-1" style="min-height: 0; padding: 4px;">
         <div class="h-full bg-card/90 backdrop-blur-xl shadow-lg rounded-lg" style="overflow: hidden; padding: 6px;">
           <ClientOnly>
-            <ImageCarousel
-              :files="files"
-              :current-index="currentIndex"
-              :processors="currentTemplate.processors"
-              :user-config="currentConfig"
-              :preview-urls="previewUrls"
-              :custom-logos="customLogos"
-              :exif-cache="exifCache"
-              @update:current-index="currentIndex = $event"
-            />
-          </ClientOnly>
-        </div>
+                        <ImageCarousel
+                          :files="files"
+                          :current-index="currentIndex"
+                          :processors="currentTemplate.processors"
+                          :user-config="currentConfig"
+                          :preview-urls="previewUrls"
+                          :custom-logos="customLogos"
+                          :exif-cache="exifCache"
+                          @update:current-index="currentIndex = $event"
+                          @upload="triggerFileInput"
+                          @delete="handleDeleteImage"
+                        />
+                      </ClientOnly>        </div>
       </div>
 
       <!-- Bottom Control Tabs -->
@@ -359,6 +372,9 @@ const props = defineProps<Props>()
 // Emits
 const emit = defineEmits<{
   reset: []
+  reupload: [files: File[]]
+  replace: [files: File[]]
+  'delete-file': [index: number]
   'update:imageStates': [value: Map<File, { templateId: string; config: Record<string, any> }>]
   'update:processedCache': [value: Map<File, { canvas: HTMLCanvasElement; blob: Blob }>]
   'update:previewUrls': [value: Map<File, string>]
@@ -370,6 +386,9 @@ const { success, error: showError } = useToast()
 
 // Confirm dialog
 const { confirm } = useConfirm()
+
+// 文件输入引用
+const fileInput = ref<HTMLInputElement>()
 
 // 模板管理
 const { templates } = useTemplates()
@@ -558,7 +577,7 @@ function handleTemplateSelect(id: string) {
   currentConfig.value = {}
 }
 
-// 处理Logo上传成功
+// 处理 Logo 上传成功
 async function handleLogoUploaded(brand: string) {
   const brandName = brand || '无品牌'
   const filesToReprocess: File[] = []
@@ -633,6 +652,39 @@ async function handleLogoUploaded(brand: string) {
     console.error('Reprocess error:', error)
     showError('重新处理失败，请重试')
   }
+}
+
+// 触发文件选择
+function triggerFileInput() {
+  fileInput.value?.click()
+}
+
+// 处理文件选择
+function handleFileSelect(event: Event) {
+  const target = event.target as HTMLInputElement
+  if (target.files && target.files.length > 0) {
+    // 触发替换事件，让父组件替换现有文件
+    emit('replace', Array.from(target.files))
+    // 清空 input 以便下次可以选择相同的文件
+    target.value = ''
+  }
+}
+
+// 删除照片
+async function handleDeleteImage(index: number) {
+  const fileToDelete = props.files[index]
+  if (!fileToDelete) return
+
+  const confirmed = await confirm({
+    title: '删除照片',
+    message: `确定要删除 "${fileToDelete.name}" 吗？`,
+    confirmText: '删除',
+    cancelText: '取消'
+  })
+
+  if (!confirmed) return
+
+  emit('delete-file', index)
 }
 
 // 应用到所有图片
