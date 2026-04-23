@@ -52,6 +52,8 @@ export const nikonBlur: TemplateConfig = {
       showAperture: true,
       showShutter: true,
       showISO: true,
+      showDateTime: false,
+      showLens: false,
       height: 0.03,  // vh(3)
       trim: true,
       color: 'white'

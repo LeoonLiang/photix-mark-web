@@ -39,6 +39,8 @@ export const blurBackground: TemplateConfig = {
       showAperture: true,
       showShutter: true,
       showISO: true,
+      showDateTime: false,
+      showLens: false,
       height: 0.03,
       trim: true,
       color: 'white',
