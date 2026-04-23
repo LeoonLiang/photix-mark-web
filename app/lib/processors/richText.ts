@@ -15,7 +15,7 @@ export class RichTextProcessor extends ImageProcessor {
     const exif = ctx.exif
 
     // 检查是否有文本配置
-    if (!config.text && !config.auto_params && !config.auto_camera && !config.auto_lens && !config.auto_datetime) {
+    if (!config.text && !config.auto_params && !config.auto_camera) {
       console.warn('[RichTextProcessor] No text configured')
       return ctx
     }
@@ -25,10 +25,6 @@ export class RichTextProcessor extends ImageProcessor {
     if (config.auto_params) {
       const parts = []
 
-      // 镜头信息
-      if (config.showLens !== false && exif.LensModel) {
-        parts.push(exif.LensModel)
-      }
       if (config.showFocalLength !== false && exif.FocalLength) {
         parts.push(`${exif.FocalLength}mm`)
       }
@@ -45,22 +41,8 @@ export class RichTextProcessor extends ImageProcessor {
       if (config.showISO !== false && exif.ISO) {
         parts.push(`ISO${exif.ISO}`)
       }
-      // 拍摄时间
-      if (config.showDateTime !== false && exif.DateTimeOriginal) {
-        parts.push(this.formatDateTime(exif.DateTimeOriginal))
-      }
 
       text = parts.join(' ')
-    } else if (config.auto_lens) {
-      // 镜头信息文本
-      if (config.showLens !== false && exif.LensModel) {
-        text = exif.LensModel
-      }
-    } else if (config.auto_datetime) {
-      // 拍摄时间文本
-      if (config.showDateTime !== false && exif.DateTimeOriginal) {
-        text = this.formatDateTime(exif.DateTimeOriginal)
-      }
     } else if (config.auto_camera) {
       // 相机型号文本
       const parts = []
@@ -141,29 +123,5 @@ export class RichTextProcessor extends ImageProcessor {
 
     // 否则视为固定像素
     return value
-  }
-
-  /**
-   * 格式化日期时间
-   * 将 Date 对象或 "2026:01:23 14:30:00" 转换为 "2026-01-23 14:30"
-   */
-  private formatDateTime(value: any): string {
-    // 如果是 Date 对象
-    if (value instanceof Date) {
-      const year = value.getFullYear()
-      const month = String(value.getMonth() + 1).padStart(2, '0')
-      const day = String(value.getDate()).padStart(2, '0')
-      const hour = String(value.getHours()).padStart(2, '0')
-      const minute = String(value.getMinutes()).padStart(2, '0')
-      return `${year}-${month}-${day} ${hour}:${minute}`
-    }
-
-    // 如果是字符串
-    const dateStr = String(value)
-    // EXIF 格式: "2026:01:23 14:30:00"
-    // 目标格式: "2026-01-23 14:30"
-    return dateStr
-      .replace(/^(\d{4}):(\d{2}):(\d{2})/, '$1-$2-$3')
-      .replace(/:\d{2}$/, '')
   }
 }

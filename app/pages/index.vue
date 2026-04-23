@@ -14,9 +14,6 @@
     :no-brand-count="noBrandCount"
     :custom-logos="customLogos"
     @reset="resetApp"
-    @reupload="handleReupload"
-    @replace="handleReplace"
-    @delete-file="handleDeleteFile"
     @update:image-states="imageStates = $event"
     @update:processed-cache="processedCache = $event"
     @update:preview-urls="previewUrls = $event"
@@ -28,7 +25,6 @@
 import { ref } from 'vue'
 import { useExif } from '~/composables/useExif'
 import { useConfirm } from '~/composables/useConfirm'
-import { useToast } from '~/composables/useToast'
 import { initProcessors } from '~/lib/processors'
 import HomePage from '~/components/HomePage.vue'
 import EditorPage from '~/components/EditorPage.vue'
@@ -60,9 +56,6 @@ const { readExif } = useExif()
 
 // Confirm dialog
 const { confirm } = useConfirm()
-
-// Toast notifications
-const { success, error: showError } = useToast()
 
 // 上传的文件
 const uploadedFiles = ref<File[]>([])
@@ -123,82 +116,6 @@ async function handleUpload(files: File[]) {
   }
 }
 
-// 处理替换 - 用新照片替换现有照片
-async function handleReplace(files: File[]) {
-  uploadedFiles.value = files
-
-  // 清除所有旧的状态和缓存
-  imageStates.value.clear()
-  processedCache.value.clear()
-  previewUrls.value.clear()
-  exifCache.value.clear()
-  brandStats.value.clear()
-  noBrandCount.value = 0
-  customLogos.value.clear()
-
-  // 为所有新图片初始化默认状态并读取 EXIF
-  for (const file of files) {
-    imageStates.value.set(file, {
-      templateId: 'noProcess',
-      config: {}
-    })
-
-    // 异步读取 EXIF
-    try {
-      const exif = await readExif(file)
-      exifCache.value.set(file, exif)
-
-      // 统计品牌
-      if (exif.Make && exif.Make.trim()) {
-        const brand = exif.Make.trim()
-        brandStats.value.set(brand, (brandStats.value.get(brand) || 0) + 1)
-      } else {
-        noBrandCount.value++
-      }
-    } catch (error) {
-      console.error('Failed to read EXIF:', error)
-      exifCache.value.set(file, {})
-      noBrandCount.value++
-    }
-  }
-
-  success(`已替换为 ${files.length} 张新图片`)
-}
-
-// 处理重新上传 - 添加新文件而不清除当前状态
-async function handleReupload(files: File[]) {
-  // 将新文件添加到现有文件列表
-  uploadedFiles.value = [...uploadedFiles.value, ...files]
-
-  // 为新图片初始化默认状态并读取 EXIF
-  for (const file of files) {
-    imageStates.value.set(file, {
-      templateId: 'noProcess',
-      config: {}
-    })
-
-    // 异步读取 EXIF
-    try {
-      const exif = await readExif(file)
-      exifCache.value.set(file, exif)
-
-      // 统计品牌
-      if (exif.Make && exif.Make.trim()) {
-        const brand = exif.Make.trim()
-        brandStats.value.set(brand, (brandStats.value.get(brand) || 0) + 1)
-      } else {
-        noBrandCount.value++
-      }
-    } catch (error) {
-      console.error('Failed to read EXIF:', error)
-      exifCache.value.set(file, {})
-      noBrandCount.value++
-    }
-  }
-
-  success(`已添加 ${files.length} 张新图片`)
-}
-
 // 重置应用
 async function resetApp() {
   const confirmed = await confirm({
@@ -218,45 +135,6 @@ async function resetApp() {
     noBrandCount.value = 0
     customLogos.value.clear()
   }
-}
-
-// 删除照片
-function handleDeleteFile(index: number) {
-  const fileToDelete = uploadedFiles.value[index]
-  if (!fileToDelete) return
-
-  // 获取照片的品牌信息
-  const exif = exifCache.value.get(fileToDelete)
-  const brand = exif?.Make?.trim()
-
-  // 更新品牌统计
-  if (brand && brandStats.value.has(brand)) {
-    const count = brandStats.value.get(brand)! - 1
-    if (count <= 0) {
-      brandStats.value.delete(brand)
-    } else {
-      brandStats.value.set(brand, count)
-    }
-  } else if (!brand) {
-    noBrandCount.value--
-  }
-
-  // 清理文件相关的缓存
-  imageStates.value.delete(fileToDelete)
-  processedCache.value.delete(fileToDelete)
-  previewUrls.value.delete(fileToDelete)
-  exifCache.value.delete(fileToDelete)
-
-  // 从文件列表中删除
-  uploadedFiles.value.splice(index, 1)
-
-  // 如果没有文件了，清空所有状态
-  if (uploadedFiles.value.length === 0) {
-    brandStats.value.clear()
-    noBrandCount.value = 0
-  }
-
-  success('照片已删除')
 }
 </script>
 

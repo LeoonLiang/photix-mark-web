@@ -1,30 +1,6 @@
 import exifr from 'exifr'
 
 /**
- * 从图片文件读取尺寸
- * @param file 图片文件
- * @returns 图片尺寸对象
- */
-async function getImageDimensions(file: File): Promise<{ width?: number, height?: number }> {
-  return new Promise((resolve) => {
-    const img = new Image()
-    const url = URL.createObjectURL(file)
-
-    img.onload = () => {
-      URL.revokeObjectURL(url)
-      resolve({ width: img.width, height: img.height })
-    }
-
-    img.onerror = () => {
-      URL.revokeObjectURL(url)
-      resolve({ width: undefined, height: undefined })
-    }
-
-    img.src = url
-  })
-}
-
-/**
  * EXIF 数据读取 Composable
  */
 export function useExif() {
@@ -33,28 +9,51 @@ export function useExif() {
    * @param file 图片文件
    * @returns EXIF 数据对象
    */
-async function readExif(file: File): Promise<Record<string, any>> {
+  async function readExif(file: File): Promise<Record<string, any>> {
     try {
       console.log('[useExif] Reading EXIF from file:', file.name)
 
-      // 同时读取 EXIF 数据和图片尺寸
-      const [exif, dimensions] = await Promise.all([
-        exifr.parse(file),
-        getImageDimensions(file)
-      ])
+      const exif = await exifr.parse(file, {
+        // 读取所有可用的 EXIF 标签
+        pick: [
+          // 相机信息
+          'Make',
+          'Model',
+          'CameraModelName',
+
+          // 镜头信息
+          'LensModel',
+          'LensMake',
+
+          // 拍摄参数
+          'FocalLength',
+          'FocalLengthIn35mmFormat',
+          'FNumber',
+          'AperatureValue',
+          'ApertureValue',
+          'ExposureTime',
+          'ShutterSpeed',
+          'ShutterSpeedValue',
+          'ISO',
+          'ISOSpeedRatings',
+
+          // 时间信息
+          'DateTimeOriginal',
+          'CreateDate',
+          'DateCreated',
+          'DateTimeCreated',
+          'DigitalCreationDate',
+          'DigitalCreationDateTime',
+
+          // 图片信息
+          'ImageWidth',
+          'ImageHeight',
+          'Orientation'
+        ]
+      })
 
       console.log('[useExif] EXIF data:', exif)
-      console.log('[useExif] Dimensions:', dimensions)
-
-      // 将尺寸信息合并到 EXIF 数据中
-      const result = {
-        ...(exif || {}),
-        // 使用 Image 对象读取的尺寸，因为 EXIF 中的尺寸可能不准确
-        ImageWidth: dimensions.width,
-        ImageHeight: dimensions.height
-      }
-
-      return result
+      return exif || {}
     } catch (error) {
       console.error('[useExif] Failed to read EXIF:', error)
       return {}

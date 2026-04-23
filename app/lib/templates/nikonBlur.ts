@@ -48,12 +48,10 @@ export const nikonBlur: TemplateConfig = {
     {
       processor_name: 'rich_text',
       auto_params: true,  // 自动构建拍摄参数文本
-      showLens: true,
       showFocalLength: true,
       showAperture: true,
       showShutter: true,
       showISO: true,
-      showDateTime: true,
       height: 0.03,  // vh(3)
       trim: true,
       color: 'white'
@@ -104,12 +102,12 @@ export const nikonBlur: TemplateConfig = {
     exifFields: {
       showBrand: true,
       showModel: true,
-      showLens: true,
+      showLens: false,
       showFocalLength: true,
       showAperture: true,
       showShutter: true,
       showISO: true,
-      showDateTime: true
+      showDateTime: false
     },
     logo: {
       enabled: false
