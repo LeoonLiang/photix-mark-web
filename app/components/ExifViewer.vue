@@ -110,8 +110,8 @@
           </div>
           <div class="flex justify-between items-center py-1">
             <span class="text-muted-foreground">图片尺寸</span>
-            <span :class="(exif.ImageWidth && exif.ImageHeight) ? 'text-foreground font-medium' : 'text-muted-foreground/50'">
-              {{ (exif.ImageWidth && exif.ImageHeight) ? `${exif.ImageWidth} × ${exif.ImageHeight}` : '未找到' }}
+            <span :class="getImageSize(exif).width && getImageSize(exif).height ? 'text-foreground font-medium' : 'text-muted-foreground/50'">
+              {{ getImageSize(exif).width && getImageSize(exif).height ? `${getImageSize(exif).width} × ${getImageSize(exif).height}` : '未找到' }}
             </span>
           </div>
         </div>
@@ -128,6 +128,13 @@ const props = defineProps<{
 }>()
 
 const expanded = ref(false)
+
+function getImageSize(exif: Record<string, any>): { width?: number, height?: number } {
+  // 尝试多种可能的字段名，按优先级排序
+  const width = exif.ImageWidth || exif.PixelXDimension || exif.ExifImageWidth || exif.Width
+  const height = exif.ImageHeight || exif.PixelYDimension || exif.ExifImageHeight || exif.Height
+  return { width, height }
+}
 
 function formatShutter(exposureTime?: number): string {
   if (!exposureTime) return '未找到'

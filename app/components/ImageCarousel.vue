@@ -198,19 +198,36 @@
       </Teleport>
     </div>
 
-    <!-- Thumbnails Carousel - 优化样式 -->
-    <div v-if="files.length > 1" class="border-t border-border/50 bg-background/30" style="height: 96px; flex-shrink: 0; padding: 8px 0;">
+<!-- Thumbnails Carousel - 优化样式 -->
+    <div v-if="files.length > 0" class="border-t border-border/50 bg-background/30" style="height: 96px; flex-shrink: 0; padding: 8px 0;">
       <div class="flex items-center gap-1.5 h-full px-2">
         <!-- Thumbnail List - 无箭头，纯滚动 -->
         <div ref="thumbnailContainer" class="flex-1 overflow-x-auto h-full scrollbar-hide smooth-scroll">
           <div class="flex gap-2 h-full items-center p-1">
+            <!-- 添加照片按钮 -->
+            <div
+              @click="emit('upload')"
+              class="relative rounded-lg overflow-hidden cursor-pointer flex-shrink-0 transition-all duration-200 opacity-100 hover:opacity-100 border-2 border-dashed border-border hover:border-primary/50 hover:bg-accent"
+              :style="{
+                width: '56px',
+                height: '68px'
+              }"
+            >
+              <div class="w-full h-full flex items-center justify-center">
+                <svg class="w-6 h-6 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                </svg>
+              </div>
+            </div>
+
+            <!-- 照片缩略图 -->
             <div
               v-for="(file, index) in files"
               :key="index"
               :data-thumbnail="index"
               @click="selectImage(index)"
               :class="[
-                'relative rounded-lg overflow-hidden cursor-pointer flex-shrink-0 transition-all duration-200',
+                'relative rounded-lg overflow-hidden cursor-pointer flex-shrink-0 transition-all duration-200 group',
                 currentIndex === index
                   ? 'ring-2 ring-primary scale-105'
                   : 'opacity-60 hover:opacity-100'
@@ -231,6 +248,17 @@
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                 </svg>
               </div>
+
+              <!-- 删除按钮 -->
+              <button
+                @click.stop="deleteImage(index)"
+                class="absolute top-1 right-1 w-5 h-5 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-lg z-10"
+                title="删除照片"
+              >
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
             </div>
           </div>
         </div>
@@ -256,6 +284,8 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   'update:current-index': [index: number]
+  upload: []
+  delete: [index: number]
 }>()
 
 // 缩略图容器引用
@@ -416,6 +446,11 @@ function getThumbnailUrl(file: File): string | null {
 function selectImage(index: number) {
   emit('update:current-index', index)
   scrollToCurrentThumbnail()
+}
+
+// 删除照片
+function deleteImage(index: number) {
+  emit('delete', index)
 }
 
 function prevImage() {

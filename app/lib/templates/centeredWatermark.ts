@@ -62,10 +62,12 @@ export const centeredWatermark: TemplateConfig = {
     exifFields: {
       showBrand: true,
       showModel: true,
+      showLens: true,
       showFocalLength: true,
       showAperture: true,
       showShutter: true,
-      showISO: true
+      showISO: true,
+      showDateTime: true
     },
     logo: {
       enabled: true,

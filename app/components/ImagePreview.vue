@@ -60,6 +60,17 @@
         class="h-full overflow-y-auto"
       >
         <div class="grid grid-cols-4 gap-4">
+          <!-- 添加照片按钮 -->
+          <div
+            @click="emit('upload')"
+            class="aspect-square bg-muted rounded-lg overflow-hidden cursor-pointer hover:ring-2 hover:ring-primary hover:shadow-lg transition-all border-2 border-dashed border-border hover:border-primary/50 hover:bg-accent flex items-center justify-center group"
+          >
+            <svg class="w-12 h-12 text-muted-foreground group-hover:text-primary transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+            </svg>
+          </div>
+
+          <!-- 照片缩略图 -->
           <div
             v-for="(file, index) in files"
             :key="index"
@@ -67,16 +78,28 @@
             class="aspect-square bg-muted rounded-lg overflow-hidden cursor-pointer hover:ring-2 hover:ring-primary hover:shadow-lg transition-all relative group"
           >
             <img
-              v-if="previewUrls.get(file)"
-              :src="previewUrls.get(file)"
+              v-if="originalUrls.get(file)"
+              :src="originalUrls.get(file)"
               :alt="file.name"
               class="w-full h-full object-contain bg-gray-100"
             />
             <div v-else class="w-full h-full flex items-center justify-center">
               <svg class="animate-spin w-8 h-8 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                <path stroke-linecap="round"stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
               </svg>
             </div>
+
+            <!-- 删除按钮 -->
+            <button
+              @click.stop="deleteImage(index)"
+              class="absolute top-2 right-2 w-6 h-6 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
+              title="删除照片"
+            >
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+
             <div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
               <span class="text-white text-sm font-medium">点击查看</span>
             </div>
@@ -155,6 +178,8 @@ const props = defineProps<{
 const emit = defineEmits<{
   'update:current-index': [index: number]
   'update:preview-mode': [mode: 'grid' | 'carousel']
+  upload: []
+  delete: [index: number]
 }>()
 
 // 预览 URL 缓存
@@ -293,6 +318,10 @@ const previewUrls = computed(() => {
 function selectImage(index: number) {
   emit('update:current-index', index)
   emit('update:preview-mode', 'carousel')
+}
+
+function deleteImage(index: number) {
+  emit('delete', index)
 }
 
 function prevImage() {
