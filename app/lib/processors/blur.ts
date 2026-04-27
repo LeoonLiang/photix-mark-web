@@ -22,7 +22,7 @@ export class BlurProcessor extends ImageProcessor {
     }
 
     // 计算模糊半径
-    const blurRadiusConfig = config.blur_radius || 0.03
+    const blurRadiusConfig = config.blurRadius ?? config.blur_radius ?? 0.03
     const blurRadius = blurRadiusConfig < 1
       ? blurRadiusConfig * canvas.height
       : blurRadiusConfig

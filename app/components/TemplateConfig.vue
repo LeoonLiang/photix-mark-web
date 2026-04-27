@@ -193,6 +193,32 @@
       </div>
     </section>
 
+    <section v-if="hasBlurConfig" class="config-card">
+      <div class="section-head">
+        <h3 class="section-title">模糊</h3>
+      </div>
+      <div class="space-y-3">
+        <div v-if="hasBlur('blurRadius')" class="space-y-2">
+          <div class="flex items-center justify-between gap-3">
+            <label class="field-label">模糊强度</label>
+            <div class="flex items-center gap-2">
+              <span class="value-pill">{{ formatRangeValue(localConfig.blurRadius) }}</span>
+              <button @click="resetField('blurRadius')" class="reset-chip">重置</button>
+            </div>
+          </div>
+          <input
+            type="range"
+            min="0"
+            max="0.12"
+            step="0.001"
+            :value="localConfig.blurRadius"
+            @input="updateConfig('blurRadius', Number(($event.target as HTMLInputElement).value))"
+            class="slider-input"
+          />
+        </div>
+      </div>
+    </section>
+
     <section v-if="hasLogoConfig || hasAnyExifField" class="config-card">
       <div class="section-head">
         <h3 class="section-title">内容</h3>
@@ -307,6 +333,7 @@ const hasColorConfig = computed(() => props.template.userOptions.colors !== unde
 const hasBackgroundConfig = computed(() => props.template.userOptions.background !== undefined)
 const hasBorderConfig = computed(() => props.template.userOptions.border !== undefined)
 const hasShadowConfig = computed(() => props.template.userOptions.shadow !== undefined)
+const hasBlurConfig = computed(() => props.template.userOptions.blur !== undefined)
 const hasLayoutConfig = computed(() => props.template.userOptions.layout !== undefined)
 
 const shadowColorInputValue = computed(() => {
@@ -340,6 +367,11 @@ function hasBorder(field: keyof NonNullable<typeof props.template.userOptions.bo
 function hasShadow(field: keyof NonNullable<typeof props.template.userOptions.shadow>): boolean {
   const shadow = props.template.userOptions.shadow
   return !!shadow && field in shadow
+}
+
+function hasBlur(field: keyof NonNullable<typeof props.template.userOptions.blur>): boolean {
+  const blur = props.template.userOptions.blur
+  return !!blur && field in blur
 }
 
 function hasLayout(field: keyof NonNullable<typeof props.template.userOptions.layout>): boolean {

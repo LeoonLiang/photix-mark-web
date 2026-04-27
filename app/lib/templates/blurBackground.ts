@@ -110,6 +110,9 @@ export const blurBackground: TemplateConfig = {
       shadowEnabled: true,
       shadowColor: 'black',
       shadowRadius: 0.01
+    },
+    blur: {
+      blurRadius: 0.05
     }
   }
 }

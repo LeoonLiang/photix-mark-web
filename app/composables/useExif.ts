@@ -5,16 +5,40 @@ import { normalizeParsedExif } from '~/lib/editor/exif'
  * EXIF 数据读取 Composable
  */
 export function useExif() {
+  async function readImageDimensions(file: File): Promise<Record<string, number>> {
+    return new Promise((resolve, reject) => {
+      const img = new Image()
+      const url = URL.createObjectURL(file)
+
+      img.onload = () => {
+        URL.revokeObjectURL(url)
+        resolve({
+          ImageWidth: img.naturalWidth || img.width,
+          ImageHeight: img.naturalHeight || img.height
+        })
+      }
+
+      img.onerror = () => {
+        URL.revokeObjectURL(url)
+        reject(new Error('Failed to load image dimensions'))
+      }
+
+      img.src = url
+    })
+  }
+
   /**
    * 从文件读取 EXIF 数据
    * @param file 图片文件
    * @returns EXIF 数据对象
    */
   async function readExif(file: File): Promise<Record<string, any>> {
+    let parsedExif: Record<string, any> = {}
+
     try {
       console.log('[useExif] Reading EXIF from file:', file.name)
 
-      const exif = await exifr.parse(file, {
+      parsedExif = (await exifr.parse(file, {
         // 读取所有可用的 EXIF 标签
         pick: [
           // 相机信息
@@ -51,15 +75,24 @@ export function useExif() {
           'ImageHeight',
           'Orientation'
         ]
-      })
-
-      const normalizedExif = normalizeParsedExif(exif || {})
-      console.log('[useExif] EXIF data:', normalizedExif)
-      return normalizedExif
+      })) || {}
     } catch (error) {
       console.error('[useExif] Failed to read EXIF:', error)
-      return {}
     }
+
+    try {
+      const dimensions = await readImageDimensions(file)
+      parsedExif = {
+        ...dimensions,
+        ...parsedExif
+      }
+    } catch (error) {
+      console.error('[useExif] Failed to read image dimensions:', error)
+    }
+
+    const normalizedExif = normalizeParsedExif(parsedExif)
+    console.log('[useExif] EXIF data:', normalizedExif)
+    return normalizedExif
   }
 
   /**

@@ -121,6 +121,9 @@ export const nikonBlur: TemplateConfig = {
       shadowEnabled: true,
       shadowColor: 'black',
       shadowRadius: 0.01
+    },
+    blur: {
+      blurRadius: 0.05
     }
   }
 }

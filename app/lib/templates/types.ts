@@ -51,6 +51,11 @@ export interface TemplateUserOptions {
     shadowColor?: string
     shadowRadius?: number
   }
+
+  /** 模糊控制 */
+  blur?: {
+    blurRadius?: number
+  }
 }
 
 /**

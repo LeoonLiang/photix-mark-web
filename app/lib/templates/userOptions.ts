@@ -21,6 +21,7 @@ export function getTemplateDefaultConfig(template: TemplateConfig): Record<strin
     borderRadius: template.userOptions.border?.borderRadius ?? 0.01,
     shadowEnabled: template.userOptions.shadow?.shadowEnabled ?? true,
     shadowColor: template.userOptions.shadow?.shadowColor ?? 'rgba(0,0,0,0.15)',
-    shadowRadius: template.userOptions.shadow?.shadowRadius ?? 0.006
+    shadowRadius: template.userOptions.shadow?.shadowRadius ?? 0.006,
+    blurRadius: template.userOptions.blur?.blurRadius ?? 0.03
   }
 }

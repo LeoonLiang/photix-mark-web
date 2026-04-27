@@ -33,7 +33,7 @@
 
       <!-- EXIF 信息卡片 - 按钮悬浮在右上角 -->
       <div
-        v-if="currentExif && Object.keys(currentExif).length > 0"
+        v-if="hasCurrentFile"
         class="absolute top-3 right-3 z-10"
         @click.stop
       >
@@ -67,7 +67,7 @@
       <Teleport to="body">
         <Transition name="exif-modal">
           <div
-            v-if="exifExpanded && currentExif && Object.keys(currentExif).length > 0"
+            v-if="exifExpanded && hasCurrentFile"
             class="fixed inset-0 z-[9999] flex items-center justify-center p-4"
             @click="closeExifModal"
           >
@@ -101,6 +101,13 @@
 
               <!-- Content -->
               <div class="p-4 space-y-3 text-xs overflow-y-auto custom-scrollbar" style="max-height: calc(85vh - 64px);">
+                <div
+                  v-if="!hasReadableExifContent"
+                  class="rounded-xl border border-amber-300/20 bg-amber-400/10 px-3 py-2 text-[11px] text-amber-100"
+                >
+                  当前图片没有读到可用 EXIF 信息，可以直接在这里手动填写。
+                </div>
+
                 <!-- 相机信息 -->
                 <div class="space-y-2">
                   <div class="flex items-center gap-2 mb-2 pb-2 border-b border-white/10">
@@ -214,8 +221,8 @@
                   </div>
                   <div class="flex justify-between items-center py-1">
                     <span class="text-white/60">图片尺寸</span>
-                    <span :class="(currentExif.ImageWidth && currentExif.ImageHeight) ? 'text-white font-medium' : 'text-white/40'">
-                      {{ (currentExif.ImageWidth && currentExif.ImageHeight) ? `${currentExif.ImageWidth} × ${currentExif.ImageHeight}` : '未找到' }}
+                    <span :class="imageSizeText ? 'text-white font-medium' : 'text-white/40'">
+                      {{ imageSizeText || '未找到' }}
                     </span>
                   </div>
                 </div>
@@ -329,16 +336,45 @@ const appendInput = ref<HTMLInputElement | null>(null)
 
 // EXIF 信息展开状态
 const exifExpanded = ref(false)
+const currentFile = computed(() => props.files[props.currentIndex] || null)
+const hasCurrentFile = computed(() => currentFile.value !== null)
 
 // 当前图片的 EXIF 数据
 const currentExif = computed(() => {
   if (props.currentExif) return props.currentExif
-  const currentFile = props.files[props.currentIndex]
-  if (!currentFile || !props.exifCache) return null
+  if (!currentFile.value || !props.exifCache) return null
   return mergeExifWithOverrides(
-    props.exifCache.get(currentFile) || {},
-    props.imageStates?.get(currentFile)?.exifOverrides || {}
+    props.exifCache.get(currentFile.value) || {},
+    props.imageStates?.get(currentFile.value)?.exifOverrides || {}
   )
+})
+
+const hasReadableExifContent = computed(() => {
+  const exif = currentExif.value || {}
+  const keysToCheck = [
+    'Make',
+    'Model',
+    'LensModel',
+    'FocalLength',
+    'FNumber',
+    'ExposureTime',
+    'ISO',
+    'DateTimeOriginal'
+  ]
+
+  return keysToCheck.some(key => {
+    const value = exif[key]
+    return value !== undefined && value !== null && String(value).trim() !== ''
+  })
+})
+
+const imageSizeText = computed(() => {
+  const exif = currentExif.value || {}
+  const width = exif.ImageWidth
+  const height = exif.ImageHeight
+
+  if (!width || !height) return ''
+  return `${width} × ${height}`
 })
 
 const exifDraft = ref<Record<string, any>>({})
