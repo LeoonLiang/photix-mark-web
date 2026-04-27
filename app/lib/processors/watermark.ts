@@ -1,6 +1,7 @@
 import { ImageProcessor, type ProcessorContext } from './types'
 import { createCanvas, drawText, drawLogo, parseColor } from '~/utils/canvas'
 import { getLogoPath } from '~/utils/logoMapper'
+import { formatDateTimeValue, formatExifValue, formatShutterValue } from '~/lib/editor/exif'
 
 /**
  * 水印处理器
@@ -234,16 +235,16 @@ export class WatermarkProcessor extends ImageProcessor {
     if (config.right_top) {
       const parts = []
       if (config.showFocalLength !== false && exif.FocalLength) {
-        parts.push(`${exif.FocalLength}mm`)
+        parts.push(formatExifValue('FocalLength', exif.FocalLength))
       }
       if (config.showAperture !== false && exif.FNumber) {
-        parts.push(`f/${exif.FNumber}`)
+        parts.push(formatExifValue('FNumber', exif.FNumber))
       }
       if (config.showShutter !== false && exif.ExposureTime) {
-        parts.push(this.formatShutterSpeed(exif.ExposureTime))
+        parts.push(formatExifValue('ExposureTime', exif.ExposureTime))
       }
       if (config.showISO !== false && exif.ISO) {
-        parts.push(`ISO${exif.ISO}`)
+        parts.push(formatExifValue('ISO', exif.ISO))
       }
       rightTopText = parts.join(' ')
     }
@@ -370,7 +371,7 @@ export class WatermarkProcessor extends ImageProcessor {
       if (shutterMatch) {
         const [, varName] = shutterMatch
         const value = this.getNestedValue(exif, varName.trim())
-        return value ? this.formatShutterSpeed(value) : ''
+        return value ? formatShutterValue(value) : ''
       }
 
       // 处理 datetime 过滤器 - 格式化日期时间
@@ -378,7 +379,7 @@ export class WatermarkProcessor extends ImageProcessor {
       if (datetimeMatch) {
         const [, varName] = datetimeMatch
         const value = this.getNestedValue(exif, varName.trim())
-        return value ? this.formatDateTime(value) : ''
+        return value ? formatDateTimeValue(value) : ''
       }
 
       // 处理 default 过滤器
@@ -403,48 +404,6 @@ export class WatermarkProcessor extends ImageProcessor {
     })
 
     return result
-  }
-
-  /**
-   * 格式化快门速度
-   * 将小数转换为分数格式 (0.008 -> 1/125)
-   */
-  private formatShutterSpeed(value: any): string {
-    const speed = parseFloat(value)
-    if (isNaN(speed)) return String(value)
-
-    // 如果大于等于 1 秒，直接显示秒数
-    if (speed >= 1) {
-      return `${Math.round(speed * 10) / 10}s`
-    }
-
-    // 转换为分数格式
-    const denominator = Math.round(1 / speed)
-    return `1/${denominator}s`
-  }
-
-  /**
-   * 格式化日期时间
-   * 将 Date 对象或 "2026:01:23 14:30:00" 转换为 "2026-01-23 14:30"
-   */
-  private formatDateTime(value: any): string {
-    // 如果是 Date 对象
-    if (value instanceof Date) {
-      const year = value.getFullYear()
-      const month = String(value.getMonth() + 1).padStart(2, '0')
-      const day = String(value.getDate()).padStart(2, '0')
-      const hour = String(value.getHours()).padStart(2, '0')
-      const minute = String(value.getMinutes()).padStart(2, '0')
-      return `${year}-${month}-${day} ${hour}:${minute}`
-    }
-
-    // 如果是字符串
-    const dateStr = String(value)
-    // EXIF 格式: "2026:01:23 14:30:00"
-    // 目标格式: "2026-01-23 14:30"
-    return dateStr
-      .replace(/^(\d{4}):(\d{2}):(\d{2})/, '$1-$2-$3')
-      .replace(/:\d{2}$/, '')
   }
 
   /**

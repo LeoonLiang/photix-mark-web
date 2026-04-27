@@ -67,8 +67,11 @@
                 :user-config="currentConfig"
                 :preview-urls="previewUrls"
                 :custom-logos="customLogos"
+                :image-states="imageStates"
                 :exif-cache="exifCache"
+                :current-exif="currentExif"
                 @update:current-index="currentIndex = $event"
+                @update:exif-overrides="updateCurrentExifOverrides"
               />
             </ClientOnly>
           </div>
@@ -112,8 +115,8 @@
             </CardHeader>
             <CardContent>
               <BrandLogoManager
-                :brands="brandStats"
-                :no-brand-count="noBrandCount"
+                :brands="dynamicBrandStats"
+                :no-brand-count="dynamicNoBrandCount"
                 :custom-logos="customLogos"
                 @update:custom-logos="customLogos = $event"
                 @logo-uploaded="handleLogoUploaded"
@@ -193,8 +196,11 @@
               :user-config="currentConfig"
               :preview-urls="previewUrls"
               :custom-logos="customLogos"
+              :image-states="imageStates"
               :exif-cache="exifCache"
+              :current-exif="currentExif"
               @update:current-index="currentIndex = $event"
+              @update:exif-overrides="updateCurrentExifOverrides"
             />
           </ClientOnly>
         </div>
@@ -224,8 +230,8 @@
           <!-- 品牌管理 Tab -->
           <div v-show="currentMobileTab === 'brand'" class="px-3 pt-2 pb-3">
             <BrandLogoManager
-              :brands="brandStats"
-              :no-brand-count="noBrandCount"
+              :brands="dynamicBrandStats"
+              :no-brand-count="dynamicNoBrandCount"
               :custom-logos="customLogos"
               @update:custom-logos="customLogos = $event"
               @logo-uploaded="handleLogoUploaded"
@@ -334,6 +340,8 @@ import { useConfirm } from '~/composables/useConfirm'
 import { downloadImages } from '~/utils/download'
 import { canvasToBlob } from '~/utils/canvas'
 import { buildCustomLogoConfig } from '~/utils/customLogos'
+import { mergeExifWithOverrides } from '~/lib/editor/exif'
+import type { ImageState } from '~/lib/editor/types'
 import type { TemplateConfig } from '~/lib/templates/types'
 import Button from '~/components/ui/Button.vue'
 import Card from '~/components/ui/Card.vue'
@@ -346,7 +354,7 @@ import BrandLogoManager from '~/components/BrandLogoManager.vue'
 // Props
 interface Props {
   files: File[]
-  imageStates: Map<File, { templateId: string; config: Record<string, any> }>
+  imageStates: Map<File, ImageState>
   processedCache: Map<File, { canvas: HTMLCanvasElement; blob: Blob }>
   previewUrls: Map<File, string>
   exifCache: Map<File, Record<string, any>>
@@ -360,7 +368,7 @@ const props = defineProps<Props>()
 // Emits
 const emit = defineEmits<{
   reset: []
-  'update:imageStates': [value: Map<File, { templateId: string; config: Record<string, any> }>]
+  'update:imageStates': [value: Map<File, ImageState>]
   'update:processedCache': [value: Map<File, { canvas: HTMLCanvasElement; blob: Blob }>]
   'update:previewUrls': [value: Map<File, string>]
   'update:customLogos': [value: Map<string, string>]
@@ -386,6 +394,10 @@ const currentConfig = ref<Record<string, any>>({})
 
 // 当前图片的 EXIF（用于显示）
 const currentExif = ref<Record<string, any>>({})
+
+const currentExifOverrides = ref<Record<string, any>>({})
+
+const currentFile = computed(() => props.files[currentIndex.value])
 
 // 根据ID获取模板对象
 const currentTemplate = computed<TemplateConfig>(() => {
@@ -467,14 +479,12 @@ function loadCurrentImageState() {
     if (JSON.stringify(currentConfig.value) !== JSON.stringify(state.config)) {
       currentConfig.value = { ...state.config }
     }
+    currentExifOverrides.value = { ...(state.exifOverrides || {}) }
+  } else {
+    currentExifOverrides.value = {}
   }
 
-  const exif = props.exifCache.get(currentFile)
-  if (exif) {
-    currentExif.value = exif
-  } else {
-    currentExif.value = {}
-  }
+  currentExif.value = getMergedExifForFile(currentFile)
 }
 
 // 保存当前UI状态到当前图片
@@ -485,15 +495,76 @@ function saveCurrentImageState() {
   const newImageStates = new Map(props.imageStates)
   newImageStates.set(currentFile, {
     templateId: currentTemplateId.value,
-    config: { ...currentConfig.value }
+    config: { ...currentConfig.value },
+    exifOverrides: { ...currentExifOverrides.value }
   })
   emit('update:imageStates', newImageStates)
+}
+
+function getMergedExifForFile(file: File, overrides?: Record<string, any>): Record<string, any> {
+  const state = props.imageStates.get(file)
+  const baseExif = props.exifCache.get(file)
+  return mergeExifWithOverrides(baseExif, overrides ?? state?.exifOverrides)
+}
+
+function getEffectiveImageState(file: File): ImageState | undefined {
+  const state = props.imageStates.get(file)
+
+  if (file === currentFile.value) {
+    return {
+      templateId: currentTemplateId.value,
+      config: { ...currentConfig.value },
+      exifOverrides: { ...currentExifOverrides.value }
+    }
+  }
+
+  return state
+}
+
+function getConfigWithCustomLogo(file: File, config: Record<string, any>) {
+  const exif = getMergedExifForFile(file)
+  const brand = exif.Make?.trim()
+
+  return {
+    ...config,
+    ...buildCustomLogoConfig(brand, props.customLogos)
+  }
+}
+
+function updateCurrentExifOverrides(overrides: Record<string, any>) {
+  currentExifOverrides.value = { ...overrides }
+  currentExif.value = getMergedExifForFile(props.files[currentIndex.value], overrides)
+
+  const currentFile = props.files[currentIndex.value]
+  if (currentFile) {
+    const newProcessedCache = new Map(props.processedCache)
+    const newPreviewUrls = new Map(props.previewUrls)
+    newProcessedCache.delete(currentFile)
+    newPreviewUrls.delete(currentFile)
+    emit('update:processedCache', newProcessedCache)
+    emit('update:previewUrls', newPreviewUrls)
+  }
+
+  saveCurrentImageState()
 }
 
 // 监听索引变化
 watch(currentIndex, () => {
   loadCurrentImageState()
 })
+
+watch(
+  () => {
+    const currentFile = props.files[currentIndex.value]
+    return currentFile ? props.exifCache.get(currentFile) : null
+  },
+  () => {
+    const currentFile = props.files[currentIndex.value]
+    if (!currentFile) return
+    currentExif.value = getMergedExifForFile(currentFile, currentExifOverrides.value)
+  },
+  { deep: true }
+)
 
 // 监听模板选择变化
 watch(currentTemplateId, () => {
@@ -535,7 +606,8 @@ watch(currentConfig, () => {
     if (state && state.templateId === currentTemplateIdValue) {
       newImageStates.set(file, {
         templateId: state.templateId,
-        config: { ...currentConfig.value }
+        config: { ...currentConfig.value },
+        exifOverrides: { ...(state.exifOverrides || {}) }
       })
       newProcessedCache.delete(file)
       newPreviewUrls.delete(file)
@@ -551,6 +623,33 @@ watch(currentConfig, () => {
 const customLogos = computed({
   get: () => props.customLogos,
   set: (value) => emit('update:customLogos', value)
+})
+
+const dynamicBrandStats = computed(() => {
+  const stats = new Map<string, number>()
+
+  for (const file of props.files) {
+    const exif = getMergedExifForFile(file)
+    const brand = exif.Make?.trim()
+    if (brand) {
+      stats.set(brand, (stats.get(brand) || 0) + 1)
+    }
+  }
+
+  return stats
+})
+
+const dynamicNoBrandCount = computed(() => {
+  let count = 0
+
+  for (const file of props.files) {
+    const exif = getMergedExifForFile(file)
+    if (!exif.Make?.trim()) {
+      count++
+    }
+  }
+
+  return count
 })
 
 // 处理模板选择
@@ -571,8 +670,8 @@ async function handleLogoUploaded(brand: string, updatedLogos: Map<string, strin
   })
 
   for (const file of props.files) {
-    const state = props.imageStates.get(file)
-    const exif = props.exifCache.get(file)
+    const state = getEffectiveImageState(file)
+    const exif = getMergedExifForFile(file)
     const fileBrand = exif?.Make?.trim()
 
     if (!state || state.templateId === 'noProcess') {
@@ -591,11 +690,11 @@ async function handleLogoUploaded(brand: string, updatedLogos: Map<string, strin
   }
 
   console.log('[EditorPage] files matched for reprocess', filesToReprocess.map(file => {
-    const exif = props.exifCache.get(file)
+    const exif = getMergedExifForFile(file)
     return {
       name: file.name,
       exifBrand: exif?.Make?.trim(),
-      templateId: props.imageStates.get(file)?.templateId
+      templateId: getEffectiveImageState(file)?.templateId
     }
   }))
 
@@ -612,15 +711,14 @@ async function handleLogoUploaded(brand: string, updatedLogos: Map<string, strin
     const newPreviewUrls = new Map(props.previewUrls)
 
     for (const file of filesToReprocess) {
-      const state = props.imageStates.get(file)
+      const state = getEffectiveImageState(file)
       if (!state) continue
 
       const template = templates.value.find(t => t.id === state.templateId)
       if (!template) continue
 
-      const exif = props.exifCache.get(file)
+      const exif = getMergedExifForFile(file)
       const fileBrand = exif?.Make?.trim()
-
       const configWithLogo = {
         ...state.config,
         ...buildCustomLogoConfig(fileBrand, updatedLogos)
@@ -634,7 +732,7 @@ async function handleLogoUploaded(brand: string, updatedLogos: Map<string, strin
       })
 
       try {
-        const canvas = await processImage(file, template.processors, configWithLogo)
+        const canvas = await processImage(file, template.processors, configWithLogo, state.exifOverrides)
         const blob = await canvasToBlob(canvas)
 
         newProcessedCache.set(file, { canvas, blob })
@@ -670,9 +768,11 @@ async function applyToAll() {
 
   const newImageStates = new Map(props.imageStates)
   props.files.forEach(file => {
+    const state = getEffectiveImageState(file)
     newImageStates.set(file, {
       templateId: currentTemplateId.value,
-      config: { ...currentConfig.value }
+      config: { ...currentConfig.value },
+      exifOverrides: { ...(state?.exifOverrides || {}) }
     })
   })
   emit('update:imageStates', newImageStates)
@@ -690,12 +790,9 @@ async function applyToAll() {
       currentTemplate.value.processors,
       currentConfig.value,
       (file) => {
-        const exif = props.exifCache.get(file)
-        const brand = exif?.Make?.trim()
-
         return {
-          customLogoUrl: brand && props.customLogos.has(brand) ? props.customLogos.get(brand) : undefined,
-          customDefaultLogoUrl: props.customLogos.get('')
+          config: getConfigWithCustomLogo(file, currentConfig.value),
+          exifOverride: getEffectiveImageState(file)?.exifOverrides
         }
       }
     )
@@ -745,9 +842,11 @@ async function handleApplyToSelected(selectedFiles: File[]) {
 
   const newImageStates = new Map(props.imageStates)
   selectedFiles.forEach(file => {
+    const state = getEffectiveImageState(file)
     newImageStates.set(file, {
       templateId: currentTemplateId.value,
-      config: { ...currentConfig.value }
+      config: { ...currentConfig.value },
+      exifOverrides: { ...(state?.exifOverrides || {}) }
     })
   })
   emit('update:imageStates', newImageStates)
@@ -771,12 +870,9 @@ async function handleApplyToSelected(selectedFiles: File[]) {
       currentTemplate.value.processors,
       currentConfig.value,
       (file) => {
-        const exif = props.exifCache.get(file)
-        const brand = exif?.Make?.trim()
-
         return {
-          customLogoUrl: brand && props.customLogos.has(brand) ? props.customLogos.get(brand) : undefined,
-          customDefaultLogoUrl: props.customLogos.get('')
+          config: getConfigWithCustomLogo(file, currentConfig.value),
+          exifOverride: getEffectiveImageState(file)?.exifOverrides
         }
       }
     )
@@ -807,43 +903,38 @@ async function handleApplyToSelected(selectedFiles: File[]) {
 // 下载当前图片
 async function downloadCurrent() {
   try {
-    const currentFile = props.files[currentIndex.value]
-    const state = props.imageStates.get(currentFile)
+    const activeFile = currentFile.value
+    if (!activeFile) return
+    const state = getEffectiveImageState(activeFile)
     if (!state) return
 
     let blob: Blob
 
-    const cached = props.processedCache.get(currentFile)
+    const cached = activeFile === currentFile.value ? undefined : props.processedCache.get(activeFile)
     if (cached) {
       blob = cached.blob
     } else {
       const template = templates.value.find(t => t.id === state.templateId)
       if (!template) return
 
-      const exif = props.exifCache.get(currentFile)
-      const brand = exif?.Make?.trim()
-
-      const configWithLogo = {
-        ...state.config,
-        customLogoUrl: brand && props.customLogos.has(brand) ? props.customLogos.get(brand) : undefined,
-        customDefaultLogoUrl: props.customLogos.get('')
-      }
+      const configWithLogo = getConfigWithCustomLogo(activeFile, state.config)
 
       const canvas = await processImage(
-        currentFile,
+        activeFile,
         template.processors,
-        configWithLogo
+        configWithLogo,
+        state.exifOverrides
       )
       blob = await canvasToBlob(canvas)
 
       const newProcessedCache = new Map(props.processedCache)
-      newProcessedCache.set(currentFile, { canvas, blob })
+      newProcessedCache.set(activeFile, { canvas, blob })
       emit('update:processedCache', newProcessedCache)
     }
 
     await downloadImages([{
       blob,
-      name: currentFile.name
+      name: activeFile.name
     }])
 
     success('导出成功！')
@@ -874,7 +965,7 @@ async function downloadAll() {
 
     for (let i = 0; i < props.files.length; i++) {
       const file = props.files[i]
-      const state = props.imageStates.get(file)
+      const state = getEffectiveImageState(file)
       if (!state) continue
 
       if (state.templateId === 'noProcess') {
@@ -884,26 +975,20 @@ async function downloadAll() {
 
       let blob: Blob
 
-      const cached = newProcessedCache.get(file)
+      const cached = file === currentFile.value ? undefined : newProcessedCache.get(file)
       if (cached) {
         blob = cached.blob
       } else {
         const template = templates.value.find(t => t.id === state.templateId)
         if (!template) continue
 
-        const exif = props.exifCache.get(file)
-        const brand = exif?.Make?.trim()
-
-        const configWithLogo = {
-          ...state.config,
-          customLogoUrl: brand && props.customLogos.has(brand) ? props.customLogos.get(brand) : undefined,
-          customDefaultLogoUrl: props.customLogos.get('')
-        }
+        const configWithLogo = getConfigWithCustomLogo(file, state.config)
 
         const canvas = await processImage(
           file,
           template.processors,
-          configWithLogo
+          configWithLogo,
+          state.exifOverrides
         )
         blob = await canvasToBlob(canvas)
 

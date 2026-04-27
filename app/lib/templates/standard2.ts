@@ -73,11 +73,19 @@ export const standard2: TemplateConfig = {
     logo: {
       enabled: true
     },
-    effects: {
-      roundedCorner: true,
-      shadow: true,
-      borderRadius: 0.01,
-      shadowRadius: 100
+    colors: {
+      textColor: '#242424'
+    },
+    background: {
+      backgroundColor: '#FFFFFF'
+    },
+    border: {
+      borderRadius: 0.01
+    },
+    shadow: {
+      shadowEnabled: true,
+      shadowColor: 'rgba(0,0,0,0.15)',
+      shadowRadius: 0.006
     }
   }
 }

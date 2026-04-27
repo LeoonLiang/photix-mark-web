@@ -62,6 +62,12 @@ export const standard1: TemplateConfig = {
     logo: {
       enabled: true,
       position: 'right-bottom'
+    },
+    colors: {
+      textColor: '#242424'
+    },
+    background: {
+      backgroundColor: '#FFFFFF'
     }
   }
 }

@@ -11,8 +11,12 @@ export class ShadowProcessor extends ImageProcessor {
 
   process(ctx: ProcessorContext): ProcessorContext {
     const canvas = ctx.buffer[0]
-    const shadowRadiusConfig = ctx.config.shadow_radius || 0.005  // 降低默认值到 0.5%
-    const shadowColor = parseColor(ctx.config.shadow_color || 'rgba(0,0,0,0.15)')  // 降低透明度
+    if (ctx.config.shadowEnabled === false) {
+      return ctx
+    }
+
+    const shadowRadiusConfig = ctx.config.shadowRadius ?? ctx.config.shadow_radius ?? 0.005
+    const shadowColor = parseColor(ctx.config.shadowColor || ctx.config.shadow_color || 'rgba(0,0,0,0.15)')
 
     if (!canvas) {
       console.warn('[ShadowProcessor] No canvas in buffer')

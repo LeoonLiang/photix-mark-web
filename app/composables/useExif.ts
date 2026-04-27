@@ -1,4 +1,5 @@
 import exifr from 'exifr'
+import { normalizeParsedExif } from '~/lib/editor/exif'
 
 /**
  * EXIF 数据读取 Composable
@@ -52,8 +53,9 @@ export function useExif() {
         ]
       })
 
-      console.log('[useExif] EXIF data:', exif)
-      return exif || {}
+      const normalizedExif = normalizeParsedExif(exif || {})
+      console.log('[useExif] EXIF data:', normalizedExif)
+      return normalizedExif
     } catch (error) {
       console.error('[useExif] Failed to read EXIF:', error)
       return {}

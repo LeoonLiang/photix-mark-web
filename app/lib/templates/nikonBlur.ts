@@ -113,6 +113,14 @@ export const nikonBlur: TemplateConfig = {
     },
     logo: {
       enabled: false
+    },
+    border: {
+      borderRadius: 0.02
+    },
+    shadow: {
+      shadowEnabled: true,
+      shadowColor: 'black',
+      shadowRadius: 0.01
     }
   }
 }

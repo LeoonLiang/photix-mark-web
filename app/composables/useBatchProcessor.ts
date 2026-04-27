@@ -1,4 +1,5 @@
 import type { ProcessorStep } from '~/lib/processors/types'
+import type { ResponsiveProcessors } from '~/lib/templates/types'
 import { canvasToBlob } from '~/utils/canvas'
 import { useImageProcessor } from './useImageProcessor'
 
@@ -25,9 +26,9 @@ export function useBatchProcessor() {
    */
   async function processBatch(
     files: File[],
-    processors: ProcessorStep[],
+    processors: ProcessorStep[] | ResponsiveProcessors,
     userConfig?: Record<string, any>,
-    getFileConfig?: (file: File) => Record<string, any>
+    getFileConfig?: (file: File) => { config?: Record<string, any>; exifOverride?: Record<string, any> }
   ): Promise<Array<{ file: File; canvas: HTMLCanvasElement; blob: Blob; name: string }>> {
     processing.value = true
     progress.value = { current: 0, total: files.length, percent: 0 }
@@ -40,11 +41,12 @@ export function useBatchProcessor() {
 
       try {
         // 合并用户配置和文件特定配置
-        const fileSpecificConfig = getFileConfig ? getFileConfig(file) : {}
+        const fileRuntime = getFileConfig ? getFileConfig(file) : undefined
+        const fileSpecificConfig = fileRuntime?.config || {}
         const finalConfig = { ...userConfig, ...fileSpecificConfig }
 
         // 处理图片
-        const canvas = await processImage(file, processors, finalConfig)
+        const canvas = await processImage(file, processors, finalConfig, fileRuntime?.exifOverride)
 
         // 转换为 Blob
         const blob = await canvasToBlob(canvas, 'image/jpeg', 0.95)

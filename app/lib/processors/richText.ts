@@ -1,6 +1,7 @@
 import { ImageProcessor, type ProcessorContext } from './types'
 import { createCanvas, drawText, parseColor } from '~/utils/canvas'
 import { renderTemplate } from './templateRenderer'
+import { formatDateTimeValue, formatExifValue } from '~/lib/editor/exif'
 
 /**
  * 富文本处理器
@@ -28,26 +29,20 @@ export class RichTextProcessor extends ImageProcessor {
         parts.push(exif.LensModel)
       }
       if (config.showFocalLength !== false && exif.FocalLength) {
-        parts.push(`${exif.FocalLength}mm`)
+        parts.push(formatExifValue('FocalLength', exif.FocalLength))
       }
       if (config.showAperture !== false && exif.FNumber) {
-        parts.push(`f/${exif.FNumber}`)
+        parts.push(formatExifValue('FNumber', exif.FNumber))
       }
       if (config.showShutter !== false && exif.ExposureTime) {
-        // 使用 shutter 过滤器格式化快门速度
-        const shutterSpeed = exif.ExposureTime < 1
-          ? `1/${Math.round(1 / exif.ExposureTime)}s`
-          : `${exif.ExposureTime}s`
-        parts.push(shutterSpeed)
+        parts.push(formatExifValue('ExposureTime', exif.ExposureTime))
       }
       if (config.showISO !== false && exif.ISO) {
-        parts.push(`ISO${exif.ISO}`)
+        parts.push(formatExifValue('ISO', exif.ISO))
       }
 
       if (config.showDateTime !== false && exif.DateTimeOriginal) {
-        // 格式化拍摄时间，与 watermark 处理器保持一致
-        const formattedDate = this.formatDateTime(exif.DateTimeOriginal)
-        parts.push(formattedDate)
+        parts.push(formatDateTimeValue(exif.DateTimeOriginal))
       }
 
       text = parts.join('  ')
@@ -131,29 +126,5 @@ export class RichTextProcessor extends ImageProcessor {
 
     // 否则视为固定像素
     return value
-  }
-
-  /**
-   * 格式化日期时间
-   * 将 Date 对象或 "2026:01:23 14:30:00" 转换为 "2026-01-23 14:30"
-   */
-  private formatDateTime(value: any): string {
-    // 如果是 Date 对象
-    if (value instanceof Date) {
-      const year = value.getFullYear()
-      const month = String(value.getMonth() + 1).padStart(2, '0')
-      const day = String(value.getDate()).padStart(2, '0')
-      const hour = String(value.getHours()).padStart(2, '0')
-      const minute = String(value.getMinutes()).padStart(2, '0')
-      return `${year}-${month}-${day} ${hour}:${minute}`
-    }
-
-    // 如果是字符串
-    const dateStr = String(value)
-    // EXIF 格式: "2026:01:23 14:30:00"
-    // 目标格式: "2026-01-23 14:30"
-    return dateStr
-      .replace(/^(\d{4}):(\d{2}):(\d{2})/, '$1-$2-$3')
-      .replace(/:\d{2}$/, '')
   }
 }

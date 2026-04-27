@@ -90,6 +90,20 @@ export const sidebarWatermark: TemplateConfig = {
     logo: {
       enabled: true,
       position: 'right-bottom'
+    },
+    colors: {
+      textColor: '#000000',
+      secondaryTextColor: '#999999'
+    },
+    background: {
+      backgroundColor: '#FFFFFF'
+    },
+    layout: {
+      padding: 0.03
+    },
+    border: {
+      showBorder: true,
+      borderColor: '#E5E5E5'
     }
   }
 }

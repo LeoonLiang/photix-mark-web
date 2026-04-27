@@ -2,6 +2,7 @@ import { ImageProcessor, type ProcessorContext } from './types'
 import { createCanvas, drawText, drawLogo, parseColor, drawRoundedRect } from '~/utils/canvas'
 import { renderTemplate } from './templateRenderer'
 import { resolveLogoPath } from '~/utils/customLogos'
+import { formatExifValue, splitExifDisplayValue } from '~/lib/editor/exif'
 
 /**
  * 灵活布局处理器
@@ -51,7 +52,15 @@ export class FlexLayoutProcessor extends ImageProcessor {
     }
 
     // 合并图层（传递paddingSize和paddingColor）
-    const finalCanvas = this.mergeLayers(layers, sections, direction, sourceCanvas, paddingSize, config.padding_color || 'white')
+    const backgroundColor = config.backgroundColor || config.padding_color || 'white'
+    const finalCanvas = this.mergeLayers(
+      layers,
+      sections,
+      direction,
+      sourceCanvas,
+      paddingSize,
+      backgroundColor
+    )
 
     ctx.buffer[0] = finalCanvas
     return ctx
@@ -100,7 +109,7 @@ export class FlexLayoutProcessor extends ImageProcessor {
     const lCtx = canvas.getContext('2d')!
 
     // 背景
-    lCtx.fillStyle = parseColor(config.background || 'white')
+    lCtx.fillStyle = parseColor(ctx.config.backgroundColor || config.background || 'white')
     lCtx.fillRect(0, 0, canvas.width, canvas.height)
 
     // Logo - ✨ 从 ctx.config 读取用户配置
@@ -148,7 +157,7 @@ export class FlexLayoutProcessor extends ImageProcessor {
     const lCtx = canvas.getContext('2d')!
 
     // 背景
-    lCtx.fillStyle = parseColor(config.background || 'white')
+    lCtx.fillStyle = parseColor(ctx.config.backgroundColor || config.background || 'white')
     lCtx.fillRect(0, 0, canvas.width, canvas.height)
 
     // ✨ 可配置的字体大小（基于高度的比例）
@@ -165,8 +174,8 @@ export class FlexLayoutProcessor extends ImageProcessor {
     const paramsFontMultiplier = config.params_font_multiplier || 1.0
 
     // ✨ 可配置的颜色（独立控制品牌和参数的颜色）
-    const brandColor = config.brand_color || config.text_color || '#000000'
-    const paramsColor = config.params_color || config.text_color || '#000000'
+    const brandColor = ctx.config.textColor || config.brand_color || config.text_color || '#000000'
+    const paramsColor = ctx.config.secondaryTextColor || ctx.config.textColor || config.params_color || config.text_color || '#000000'
 
     // 计算实际字体大小
     const brandFontSize = Math.round(fontSize * brandFontMultiplier)
@@ -248,7 +257,7 @@ export class FlexLayoutProcessor extends ImageProcessor {
     sCtx.imageSmoothingEnabled = false
 
     // ✨ 背景填充白色
-    sCtx.fillStyle = parseColor(config.background || '#FFFFFF')
+    sCtx.fillStyle = parseColor(ctx.config.backgroundColor || config.background || '#FFFFFF')
     sCtx.fillRect(0, 0, canvas.width, canvas.height)
 
     // 计算布局（确保所有尺寸都是整数）
@@ -261,11 +270,12 @@ export class FlexLayoutProcessor extends ImageProcessor {
 
     // ✨ 可配置的字体倍数
     const valueFontMultiplier = config.value_font_multiplier || 0.8  // 参数数值
-    const unitFontMultiplier = config.unit_font_multiplier || 0.55   // 参数单位
+    const unitFontMultiplier = config.unit_font_multiplier || 0.65   // 参数单位
     const modelFontMultiplier = config.model_font_multiplier || 1 // 型号
 
     // 是否显示边框
-    const showBorder = config.show_border !== false
+    const showBorder = ctx.config.showBorder !== false && config.show_border !== false
+    const borderColor = ctx.config.borderColor || '#E5E5E5'
 
     let currentY = padding
 
@@ -287,7 +297,7 @@ export class FlexLayoutProcessor extends ImageProcessor {
           height: boxHeight,
           radius: Math.round(boxHeight * 0.15),
           fillColor: 'white',
-          strokeColor: '#E5E5E5',
+          strokeColor: borderColor,
           strokeWidth: Math.max(1, Math.round(width * 0.005))
         })
       }
@@ -301,7 +311,7 @@ export class FlexLayoutProcessor extends ImageProcessor {
         align: 'center',
         baseline: 'middle',
         fontWeight: '200',
-        color: config.text_color || '#000000',
+        color: ctx.config.textColor || config.text_color || '#000000',
         fontFamily: '"Alibaba PuHuiTi", Arial, sans-serif'
       })
 
@@ -314,7 +324,7 @@ export class FlexLayoutProcessor extends ImageProcessor {
         align: 'center',
         baseline: 'middle',
         fontWeight: '200',
-        color: config.text_color || '#999999',
+        color: ctx.config.secondaryTextColor || ctx.config.textColor || config.text_color || '#999999',
         fontFamily: '"Alibaba PuHuiTi", Arial, sans-serif'
       })
 
@@ -334,7 +344,7 @@ export class FlexLayoutProcessor extends ImageProcessor {
         align: 'center',
         baseline: 'middle',
         fontWeight: '700',
-        color: config.text_color || '#000000',
+        color: ctx.config.textColor || config.text_color || '#000000',
         fontFamily: '"Alibaba PuHuiTi", Arial, sans-serif'
       })
     }
@@ -369,36 +379,37 @@ export class FlexLayoutProcessor extends ImageProcessor {
 
     // 焦距
     if (config.showFocalLength !== false && exif.FocalLength) {
+      const focalLength = splitExifDisplayValue('FocalLength', exif.FocalLength)
       params.push({
-        value: String(exif.FocalLength),
-        unit: 'mm'
+        value: focalLength.value,
+        unit: focalLength.unit
       })
     }
 
     // 光圈
     if (config.showAperture !== false && exif.FNumber) {
+      const aperture = splitExifDisplayValue('FNumber', exif.FNumber)
       params.push({
-        value: String(exif.FNumber),
-        unit: 'F'
+        value: aperture.value,
+        unit: aperture.unit
       })
     }
 
     // 快门
     if (config.showShutter !== false && exif.ExposureTime) {
-      const shutterValue = exif.ExposureTime < 1
-        ? `1/${Math.round(1 / exif.ExposureTime)}`
-        : String(exif.ExposureTime)
+      const shutter = splitExifDisplayValue('ExposureTime', exif.ExposureTime)
       params.push({
-        value: shutterValue,
-        unit: 'S'
+        value: shutter.value,
+        unit: shutter.unit
       })
     }
 
     // ISO
     if (config.showISO !== false && exif.ISO) {
+      const iso = splitExifDisplayValue('ISO', exif.ISO)
       params.push({
-        value: String(exif.ISO),
-        unit: 'ISO'
+        value: iso.value,
+        unit: iso.unit
       })
     }
 
@@ -501,19 +512,16 @@ export class FlexLayoutProcessor extends ImageProcessor {
     const parts = []
 
     if (config.showFocalLength !== false && exif.FocalLength) {
-      parts.push(`${exif.FocalLength}mm`)
+      parts.push(formatExifValue('FocalLength', exif.FocalLength))
     }
     if (config.showAperture !== false && exif.FNumber) {
-      parts.push(`f/${exif.FNumber}`)
+      parts.push(formatExifValue('FNumber', exif.FNumber))
     }
     if (config.showShutter !== false && exif.ExposureTime) {
-      const shutterSpeed = exif.ExposureTime < 1
-        ? `1/${Math.round(1 / exif.ExposureTime)}s`
-        : `${exif.ExposureTime}s`
-      parts.push(shutterSpeed)
+      parts.push(formatExifValue('ExposureTime', exif.ExposureTime))
     }
     if (config.showISO !== false && exif.ISO) {
-      parts.push(`ISO${exif.ISO}`)
+      parts.push(formatExifValue('ISO', exif.ISO))
     }
 
     // ✨ 可配置的参数间距（默认 1 个空格）

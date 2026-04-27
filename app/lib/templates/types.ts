@@ -25,7 +25,31 @@ export interface TemplateUserOptions {
   /** 颜色控制 */
   colors?: {
     textColor?: string
+    secondaryTextColor?: string
+  }
+
+  /** 背景色控制 */
+  background?: {
     backgroundColor?: string
+  }
+
+  /** 版式间距控制 */
+  layout?: {
+    padding?: number
+  }
+
+  /** 边框/圆角控制 */
+  border?: {
+    showBorder?: boolean
+    borderColor?: string
+    borderRadius?: number
+  }
+
+  /** 阴影控制 */
+  shadow?: {
+    shadowEnabled?: boolean
+    shadowColor?: string
+    shadowRadius?: number
   }
 }
 

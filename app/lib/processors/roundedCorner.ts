@@ -11,7 +11,7 @@ export class RoundedCornerProcessor extends ImageProcessor {
 
   process(ctx: ProcessorContext): ProcessorContext {
     const canvas = ctx.buffer[0]
-    const borderRadiusConfig = ctx.config.border_radius || 0.01
+    const borderRadiusConfig = ctx.config.borderRadius ?? ctx.config.border_radius ?? 0.01
 
     if (!canvas) {
       console.warn('[RoundedCornerProcessor] No canvas in buffer')

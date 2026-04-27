@@ -39,7 +39,7 @@
       >
         <!-- 折叠按钮 -->
         <button
-          @click="exifExpanded = !exifExpanded"
+          @click="toggleExifModal"
           :class="[
             'flex items-center gap-2 px-3 py-2 rounded-xl transition-all',
             'bg-black/60 backdrop-blur-xl border border-white/20',
@@ -69,7 +69,7 @@
           <div
             v-if="exifExpanded && currentExif && Object.keys(currentExif).length > 0"
             class="fixed inset-0 z-[9999] flex items-center justify-center p-4"
-            @click="exifExpanded = false"
+            @click="closeExifModal"
           >
             <!-- 背景遮罩 -->
             <div class="absolute inset-0 bg-black/50 backdrop-blur-sm"></div>
@@ -90,7 +90,7 @@
                   <span class="font-semibold text-white">EXIF 信息</span>
                 </div>
                 <button
-                  @click="exifExpanded = false"
+                  @click="closeExifModal"
                   class="p-1.5 hover:bg-white/10 rounded-lg transition-colors"
                 >
                   <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -114,21 +114,30 @@
                   </div>
                   <div class="flex justify-between items-center py-1">
                     <span class="text-white/60">品牌</span>
-                    <span :class="currentExif.Make ? 'text-white font-medium' : 'text-white/40'">
-                      {{ currentExif.Make || '未找到' }}
-                    </span>
+                    <input
+                      :value="exifDraft.Make || ''"
+                      @input="updateExifField('Make', ($event.target as HTMLInputElement).value)"
+                      placeholder="未找到"
+                      class="w-40 rounded-lg border border-white/10 bg-white/10 px-2 py-1 text-right text-white placeholder:text-white/40 focus:border-white/30 focus:outline-none"
+                    />
                   </div>
                   <div class="flex justify-between items-center py-1">
                     <span class="text-white/60">型号</span>
-                    <span :class="currentExif.Model ? 'text-white font-medium' : 'text-white/40'">
-                      {{ currentExif.Model || '未找到' }}
-                    </span>
+                    <input
+                      :value="exifDraft.Model || ''"
+                      @input="updateExifField('Model', ($event.target as HTMLInputElement).value)"
+                      placeholder="未找到"
+                      class="w-40 rounded-lg border border-white/10 bg-white/10 px-2 py-1 text-right text-white placeholder:text-white/40 focus:border-white/30 focus:outline-none"
+                    />
                   </div>
                   <div class="flex justify-between items-center py-1">
                     <span class="text-white/60">镜头</span>
-                    <span :class="currentExif.LensModel ? 'text-white font-medium' : 'text-white/40'">
-                      {{ currentExif.LensModel || '未找到' }}
-                    </span>
+                    <input
+                      :value="exifDraft.LensModel || ''"
+                      @input="updateExifField('LensModel', ($event.target as HTMLInputElement).value)"
+                      placeholder="未找到"
+                      class="w-40 rounded-lg border border-white/10 bg-white/10 px-2 py-1 text-right text-white placeholder:text-white/40 focus:border-white/30 focus:outline-none"
+                    />
                   </div>
                 </div>
 
@@ -144,27 +153,43 @@
                   </div>
                   <div class="flex justify-between items-center py-1">
                     <span class="text-white/60">焦距</span>
-                    <span :class="currentExif.FocalLength ? 'text-white font-medium' : 'text-white/40'">
-                      {{ currentExif.FocalLength ? `${currentExif.FocalLength}mm` : '未找到' }}
-                    </span>
+                    <input
+                      :value="exifDraft.FocalLength ?? ''"
+                      @input="updateExifField('FocalLength', ($event.target as HTMLInputElement).value)"
+                      inputmode="decimal"
+                      placeholder="未找到"
+                      class="w-28 rounded-lg border border-white/10 bg-white/10 px-2 py-1 text-right text-white placeholder:text-white/40 focus:border-white/30 focus:outline-none"
+                    />
                   </div>
                   <div class="flex justify-between items-center py-1">
                     <span class="text-white/60">光圈</span>
-                    <span :class="currentExif.FNumber ? 'text-white font-medium' : 'text-white/40'">
-                      {{ currentExif.FNumber ? `f/${currentExif.FNumber}` : '未找到' }}
-                    </span>
+                    <input
+                      :value="exifDraft.FNumber ?? ''"
+                      @input="updateExifField('FNumber', ($event.target as HTMLInputElement).value)"
+                      inputmode="decimal"
+                      placeholder="未找到"
+                      class="w-28 rounded-lg border border-white/10 bg-white/10 px-2 py-1 text-right text-white placeholder:text-white/40 focus:border-white/30 focus:outline-none"
+                    />
                   </div>
                   <div class="flex justify-between items-center py-1">
                     <span class="text-white/60">快门</span>
-                    <span :class="currentExif.ExposureTime ? 'text-white font-medium' : 'text-white/40'">
-                      {{ formatShutter(currentExif.ExposureTime) }}
-                    </span>
+                    <input
+                      :value="exifDraft.ExposureTime ?? ''"
+                      @input="updateExifField('ExposureTime', ($event.target as HTMLInputElement).value)"
+                      inputmode="decimal"
+                      placeholder="未找到"
+                      class="w-28 rounded-lg border border-white/10 bg-white/10 px-2 py-1 text-right text-white placeholder:text-white/40 focus:border-white/30 focus:outline-none"
+                    />
                   </div>
                   <div class="flex justify-between items-center py-1">
                     <span class="text-white/60">ISO</span>
-                    <span :class="currentExif.ISO ? 'text-white font-medium' : 'text-white/40'">
-                      {{ currentExif.ISO ? `ISO ${currentExif.ISO}` : '未找到' }}
-                    </span>
+                    <input
+                      :value="exifDraft.ISO ?? ''"
+                      @input="updateExifField('ISO', ($event.target as HTMLInputElement).value)"
+                      inputmode="numeric"
+                      placeholder="未找到"
+                      class="w-28 rounded-lg border border-white/10 bg-white/10 px-2 py-1 text-right text-white placeholder:text-white/40 focus:border-white/30 focus:outline-none"
+                    />
                   </div>
                 </div>
 
@@ -180,9 +205,12 @@
                   </div>
                   <div class="flex justify-between items-center py-1">
                     <span class="text-white/60">拍摄时间</span>
-                    <span :class="currentExif.DateTimeOriginal ? 'text-white font-medium text-[10px]' : 'text-white/40'">
-                      {{ formatDateTime(currentExif.DateTimeOriginal) }}
-                    </span>
+                    <input
+                      :value="exifDraft.DateTimeOriginal || ''"
+                      @input="updateExifField('DateTimeOriginal', ($event.target as HTMLInputElement).value)"
+                      placeholder="YYYY:MM:DD HH:mm:ss"
+                      class="w-44 rounded-lg border border-white/10 bg-white/10 px-2 py-1 text-right text-[10px] text-white placeholder:text-white/40 focus:border-white/30 focus:outline-none"
+                    />
                   </div>
                   <div class="flex justify-between items-center py-1">
                     <span class="text-white/60">图片尺寸</span>
@@ -243,6 +271,8 @@
 import { ref, watch, onUnmounted, computed, nextTick } from 'vue'
 import { useDebounceFn } from '@vueuse/core'
 import { useWatermarkPreview } from '~/composables/useWatermarkPreview'
+import { mergeExifWithOverrides, normalizeExifOverrides } from '~/lib/editor/exif'
+import type { ImageState } from '~/lib/editor/types'
 
 const props = defineProps<{
   files: File[]
@@ -251,11 +281,14 @@ const props = defineProps<{
   userConfig?: Record<string, any>
   previewUrls?: Map<File, string>
   customLogos?: Map<string, string>  // 自定义Logo配置
+  imageStates?: Map<File, ImageState>
   exifCache?: Map<File, Record<string, any>>  // EXIF缓存
+  currentExif?: Record<string, any>
 }>()
 
 const emit = defineEmits<{
   'update:current-index': [index: number]
+  'update:exif-overrides': [value: Record<string, any>]
 }>()
 
 // 缩略图容器引用
@@ -266,19 +299,17 @@ const exifExpanded = ref(false)
 
 // 当前图片的 EXIF 数据
 const currentExif = computed(() => {
+  if (props.currentExif) return props.currentExif
   const currentFile = props.files[props.currentIndex]
   if (!currentFile || !props.exifCache) return null
-  return props.exifCache.get(currentFile) || null
+  return mergeExifWithOverrides(
+    props.exifCache.get(currentFile) || {},
+    props.imageStates?.get(currentFile)?.exifOverrides || {}
+  )
 })
 
-// 格式化快门速度
-function formatShutter(exposureTime?: number): string {
-  if (!exposureTime) return '未找到'
-  if (exposureTime < 1) {
-    return `1/${Math.round(1 / exposureTime)}s`
-  }
-  return `${exposureTime}s`
-}
+const exifDraft = ref<Record<string, any>>({})
+const appliedExifSnapshot = ref<Record<string, any>>({})
 
 // 格式化日期时间
 function formatDateTime(datetime?: string): string {
@@ -294,6 +325,47 @@ function formatDateTime(datetime?: string): string {
   } catch {
     return datetime
   }
+}
+
+function syncExifDraft() {
+  exifDraft.value = { ...(currentExif.value || {}) }
+  appliedExifSnapshot.value = normalizeExifOverrides(currentExif.value || {})
+}
+
+function updateExifField(key: string, value: string) {
+  exifDraft.value = {
+    ...exifDraft.value,
+    [key]: value
+  }
+}
+
+function openExifModal() {
+  syncExifDraft()
+  exifExpanded.value = true
+}
+
+function applyExifDraft() {
+  const nextOverrides = normalizeExifOverrides(exifDraft.value)
+  const previousOverrides = appliedExifSnapshot.value
+
+  if (JSON.stringify(nextOverrides) !== JSON.stringify(previousOverrides)) {
+    emit('update:exif-overrides', nextOverrides)
+    appliedExifSnapshot.value = nextOverrides
+  }
+}
+
+function closeExifModal() {
+  applyExifDraft()
+  exifExpanded.value = false
+}
+
+function toggleExifModal() {
+  if (exifExpanded.value) {
+    closeExifModal()
+    return
+  }
+
+  openExifModal()
 }
 
 // 预览缓存
@@ -362,8 +434,7 @@ const updateCurrentPreview = useDebounceFn(async () => {
     // 开始处理
     isProcessing.value = true
 
-    // 获取当前文件的品牌信息
-    const exif = props.exifCache?.get(currentFile)
+    const exif = currentExif.value || props.exifCache?.get(currentFile) || {}
     const brand = exif?.Make?.trim()
 
     // 构建包含自定义Logo的配置
@@ -377,7 +448,8 @@ const updateCurrentPreview = useDebounceFn(async () => {
     const previewUrl = await generatePreview(
       currentFile,
       props.processors,
-      configWithLogos
+      configWithLogos,
+      props.imageStates?.get(currentFile)?.exifOverrides
     )
     processedUrls.value.set(currentFile, previewUrl)
   } catch (error) {
@@ -462,12 +534,16 @@ watch(() => props.files, (newFiles, oldFiles) => {
 
 // 监听当前索引变化 - 切换图片时生成预览并滚动
 watch(() => props.currentIndex, () => {
+  if (exifExpanded.value) {
+    closeExifModal()
+  }
+  syncExifDraft()
   updateCurrentPreview()
   scrollToCurrentThumbnail()
 })
 
 // 监听配置变化 - 只清除当前图片的缓存
-watch([() => props.processors, () => props.userConfig, () => props.customLogos], () => {
+watch([() => props.processors, () => props.userConfig, () => props.customLogos, () => props.currentExif], () => {
   const currentFile = props.files[props.currentIndex]
   if (!currentFile) return
 
@@ -487,6 +563,11 @@ watch([() => props.processors, () => props.userConfig, () => props.customLogos],
   // 重新生成当前图片
   updateCurrentPreview()
 }, { deep: true })
+
+watch(currentExif, () => {
+  if (exifExpanded.value) return
+  syncExifDraft()
+}, { immediate: true, deep: true })
 
 // 清理
 onUnmounted(() => {

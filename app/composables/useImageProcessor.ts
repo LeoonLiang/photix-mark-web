@@ -19,13 +19,17 @@ export function useImageProcessor() {
   async function processImage(
     file: File,
     processors: ProcessorStep[] | { landscape: ProcessorStep[]; portrait: ProcessorStep[]; square?: ProcessorStep[] },
-    userConfig?: Record<string, any>
+    userConfig?: Record<string, any>,
+    exifOverride?: Record<string, any>
   ): Promise<HTMLCanvasElement> {
     // 1. 加载图片到 Canvas
     const sourceCanvas = await loadImageToCanvas(file)
 
     // 2. 读取 EXIF
-    const exif = await readExif(file)
+    const exif = {
+      ...(await readExif(file)),
+      ...(exifOverride || {})
+    }
 
     // 3. 选择处理器配置（如果是响应式配置）
     let actualProcessors: ProcessorStep[]

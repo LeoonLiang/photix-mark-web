@@ -70,6 +70,16 @@ export const centeredWatermark: TemplateConfig = {
     logo: {
       enabled: true,
       position: 'top-center'
+    },
+    colors: {
+      textColor: '#000000',
+      secondaryTextColor: '#666666'
+    },
+    background: {
+      backgroundColor: '#FFFFFF'
+    },
+    layout: {
+      padding: 0.03
     }
   }
 }

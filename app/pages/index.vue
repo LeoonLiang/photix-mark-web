@@ -26,14 +26,9 @@ import { ref } from 'vue'
 import { useExif } from '~/composables/useExif'
 import { useConfirm } from '~/composables/useConfirm'
 import { initProcessors } from '~/lib/processors'
+import type { ImageState } from '~/lib/editor/types'
 import HomePage from '~/components/HomePage.vue'
 import EditorPage from '~/components/EditorPage.vue'
-
-// 图片状态接口
-interface ImageState {
-  templateId: string
-  config: Record<string, any>
-}
 
 // 处理结果缓存接口
 interface ProcessedResult {
@@ -93,7 +88,8 @@ async function handleUpload(files: File[]) {
   for (const file of files) {
     imageStates.value.set(file, {
       templateId: 'noProcess',
-      config: {}
+      config: {},
+      exifOverrides: {}
     })
 
     // 异步读取 EXIF

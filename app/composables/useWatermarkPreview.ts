@@ -20,11 +20,12 @@ export function useWatermarkPreview() {
   async function generatePreview(
     file: File,
     processors: any[],
-    userConfig: Record<string, any>
+    userConfig: Record<string, any>,
+    exifOverride?: Record<string, any>
   ): Promise<string> {
     try {
       // 生成缓存key
-      const cacheKey = `${file.name}-${JSON.stringify(processors)}-${JSON.stringify(userConfig)}`
+      const cacheKey = `${file.name}-${JSON.stringify(processors)}-${JSON.stringify(userConfig)}-${JSON.stringify(exifOverride || {})}`
 
       // 检查缓存
       if (previewCache.value.has(cacheKey)) {
@@ -32,7 +33,7 @@ export function useWatermarkPreview() {
       }
 
       // 处理图片
-      const canvas = await processImage(file, processors, userConfig)
+      const canvas = await processImage(file, processors, userConfig, exifOverride)
 
       // 转换为 Data URL
       const dataUrl = canvas.toDataURL('image/jpeg', 0.8)

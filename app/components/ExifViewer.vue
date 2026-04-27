@@ -69,25 +69,25 @@
           <div class="flex justify-between items-center py-1">
             <span class="text-muted-foreground">焦距</span>
             <span :class="exif.FocalLength ? 'text-foreground font-medium' : 'text-muted-foreground/50'">
-              {{ exif.FocalLength ? `${exif.FocalLength}mm` : '未找到' }}
+              {{ exif.FocalLength || '未找到' }}
             </span>
           </div>
           <div class="flex justify-between items-center py-1">
             <span class="text-muted-foreground">光圈</span>
             <span :class="exif.FNumber ? 'text-foreground font-medium' : 'text-muted-foreground/50'">
-              {{ exif.FNumber ? `f/${exif.FNumber}` : '未找到' }}
+              {{ exif.FNumber || '未找到' }}
             </span>
           </div>
           <div class="flex justify-between items-center py-1">
             <span class="text-muted-foreground">快门</span>
             <span :class="exif.ExposureTime ? 'text-foreground font-medium' : 'text-muted-foreground/50'">
-              {{ formatShutter(exif.ExposureTime) }}
+              {{ exif.ExposureTime || '未找到' }}
             </span>
           </div>
           <div class="flex justify-between items-center py-1">
             <span class="text-muted-foreground">ISO</span>
             <span :class="exif.ISO ? 'text-foreground font-medium' : 'text-muted-foreground/50'">
-              {{ exif.ISO ? `ISO ${exif.ISO}` : '未找到' }}
+              {{ exif.ISO || '未找到' }}
             </span>
           </div>
         </div>
@@ -128,14 +128,6 @@ const props = defineProps<{
 }>()
 
 const expanded = ref(false)
-
-function formatShutter(exposureTime?: number): string {
-  if (!exposureTime) return '未找到'
-  if (exposureTime < 1) {
-    return `1/${Math.round(1 / exposureTime)}s`
-  }
-  return `${exposureTime}s`
-}
 
 function formatDateTime(datetime?: string): string {
   if (!datetime) return '未找到'

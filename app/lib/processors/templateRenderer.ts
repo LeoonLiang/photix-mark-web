@@ -1,4 +1,5 @@
 import { getLogoPath } from '~/utils/logoMapper'
+import { formatDateTimeValue, formatShutterValue } from '~/lib/editor/exif'
 
 /**
  * 模板渲染工具
@@ -45,7 +46,7 @@ export function renderTemplate(template: string, exif: Record<string, any>): str
     if (shutterMatch) {
       const [, varName] = shutterMatch
       const value = getNestedValue(exif, varName.trim())
-      return value ? formatShutterSpeed(value) : ''
+      return value ? formatShutterValue(value) : ''
     }
 
     // 处理 datetime 过滤器
@@ -53,7 +54,7 @@ export function renderTemplate(template: string, exif: Record<string, any>): str
     if (datetimeMatch) {
       const [, varName] = datetimeMatch
       const value = getNestedValue(exif, varName.trim())
-      return value ? formatDateTime(value) : ''
+      return value ? formatDateTimeValue(value) : ''
     }
 
     // 处理 default 过滤器
@@ -95,46 +96,4 @@ function getNestedValue(obj: Record<string, any>, path: string): any {
   }
 
   return value
-}
-
-/**
- * 格式化快门速度
- */
-function formatShutterSpeed(value: any): string {
-  const speed = parseFloat(value)
-  if (isNaN(speed)) return String(value)
-
-  if (speed >= 1) {
-    return `${Math.round(speed * 10) / 10}s`
-  }
-
-  const denominator = Math.round(1 / speed)
-  return `1/${denominator}s`
-}
-
-/**
- * 格式化日期时间
- */
-function formatDateTime(value: any): string {
-  if (!value) return ''
-
-  // 如果是 Date 对象
-  if (value instanceof Date) {
-    const year = value.getFullYear()
-    const month = String(value.getMonth() + 1).padStart(2, '0')
-    const day = String(value.getDate()).padStart(2, '0')
-    const hours = String(value.getHours()).padStart(2, '0')
-    const minutes = String(value.getMinutes()).padStart(2, '0')
-    return `${year}-${month}-${day} ${hours}:${minutes}`
-  }
-
-  // 如果是字符串 "2026:01:23 14:30:00"
-  const str = String(value)
-  const match = str.match(/^(\d{4}):(\d{2}):(\d{2})\s+(\d{2}):(\d{2})/)
-  if (match) {
-    const [, year, month, day, hours, minutes] = match
-    return `${year}-${month}-${day} ${hours}:${minutes}`
-  }
-
-  return str
 }
