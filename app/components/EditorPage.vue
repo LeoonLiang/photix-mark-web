@@ -58,7 +58,7 @@
       <div class="h-full grid grid-cols-12" style="gap: 16px;">
         <!-- Left: Image Carousel (70%) -->
         <div class="col-span-12 lg:col-span-8" style="min-height: 0;">
-          <div class="h-full bg-card/80 backdrop-blur-xl shadow-lg shadow-primary/5 rounded-lg" style="overflow: hidden; padding: 12px;">
+          <div class="h-full bg-slate-100 backdrop-blur-xl shadow-lg shadow-primary/5 rounded-lg" style="overflow: hidden; padding: 12px;">
             <ClientOnly>
               <ImageCarousel
                 :files="files"
@@ -333,6 +333,7 @@ import { useToast } from '~/composables/useToast'
 import { useConfirm } from '~/composables/useConfirm'
 import { downloadImages } from '~/utils/download'
 import { canvasToBlob } from '~/utils/canvas'
+import { buildCustomLogoConfig } from '~/utils/customLogos'
 import type { TemplateConfig } from '~/lib/templates/types'
 import Button from '~/components/ui/Button.vue'
 import Card from '~/components/ui/Card.vue'
@@ -559,9 +560,15 @@ function handleTemplateSelect(id: string) {
 }
 
 // 处理Logo上传成功
-async function handleLogoUploaded(brand: string) {
+async function handleLogoUploaded(brand: string, updatedLogos: Map<string, string>) {
   const brandName = brand || '无品牌'
   const filesToReprocess: File[] = []
+
+  console.log('[EditorPage] logoUploaded event received', {
+    brand,
+    updatedLogoKeys: Array.from(updatedLogos.keys()),
+    fileCount: props.files.length
+  })
 
   for (const file of props.files) {
     const state = props.imageStates.get(file)
@@ -582,6 +589,15 @@ async function handleLogoUploaded(brand: string) {
       }
     }
   }
+
+  console.log('[EditorPage] files matched for reprocess', filesToReprocess.map(file => {
+    const exif = props.exifCache.get(file)
+    return {
+      name: file.name,
+      exifBrand: exif?.Make?.trim(),
+      templateId: props.imageStates.get(file)?.templateId
+    }
+  }))
 
   if (filesToReprocess.length === 0) {
     success(`${brandName} Logo 已更新`)
@@ -607,9 +623,15 @@ async function handleLogoUploaded(brand: string) {
 
       const configWithLogo = {
         ...state.config,
-        customLogoUrl: fileBrand && props.customLogos.has(fileBrand) ? props.customLogos.get(fileBrand) : undefined,
-        customDefaultLogoUrl: props.customLogos.get('')
+        ...buildCustomLogoConfig(fileBrand, updatedLogos)
       }
+
+      console.log('[EditorPage] reprocessing file with logo config', {
+        file: file.name,
+        fileBrand,
+        customLogoUrl: configWithLogo.customLogoUrl?.slice?.(0, 48),
+        customDefaultLogoUrl: configWithLogo.customDefaultLogoUrl?.slice?.(0, 48)
+      })
 
       try {
         const canvas = await processImage(file, template.processors, configWithLogo)

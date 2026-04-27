@@ -1,7 +1,7 @@
 import { ImageProcessor, type ProcessorContext } from './types'
 import { createCanvas, drawText, drawLogo, parseColor, drawRoundedRect } from '~/utils/canvas'
-import { getLogoPath } from '~/utils/logoMapper'
 import { renderTemplate } from './templateRenderer'
+import { resolveLogoPath } from '~/utils/customLogos'
 
 /**
  * 灵活布局处理器
@@ -108,7 +108,7 @@ export class FlexLayoutProcessor extends ImageProcessor {
     if (showLogo) {
       const logoPath = config.logo_path
         ? renderTemplate(config.logo_path, ctx.exif)
-        : getLogoPath(ctx.exif.Make || '')
+        : resolveLogoPath(ctx.exif.Make, ctx.config)
 
       if (logoPath) {
         const logoSize = Math.round(height * (config.logo_size || 0.7))
@@ -345,7 +345,7 @@ export class FlexLayoutProcessor extends ImageProcessor {
     if (showLogo) {
       const logoPath = config.logo_path
         ? renderTemplate(config.logo_path, ctx.exif)
-        : getLogoPath(ctx.exif.Make || '')
+        : resolveLogoPath(ctx.exif.Make, ctx.config)
 
       if (logoPath) {
         const logoSize = Math.round(width * 0.25)
@@ -451,7 +451,7 @@ export class FlexLayoutProcessor extends ImageProcessor {
       case 'logo': {
         const logoPath = item.logo_path
           ? renderTemplate(item.logo_path, processorCtx.exif)
-          : getLogoPath(processorCtx.exif.Make || '')
+          : resolveLogoPath(processorCtx.exif.Make, processorCtx.config)
         const size = this.calculateSize(item.size, canvas.height)
         await drawLogo(ctx, { logoPath, x: actualX, y: actualY, size })
         break

@@ -174,6 +174,7 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
+import { withUploadedLogo, withoutCustomLogo } from '~/utils/customLogos'
 
 const props = defineProps<{
   brands: Map<string, number>  // 品牌名 -> 图片数量
@@ -183,7 +184,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   'update:customLogos': [logos: Map<string, string>]
-  'logoUploaded': [brand: string]
+  'logoUploaded': [brand: string, logos: Map<string, string>]
 }>()
 
 // 文件上传input引用
@@ -221,10 +222,9 @@ async function handleLogoUpload(brand: string, event: Event) {
     const dataUrl = e.target?.result as string
 
     // 更新自定义Logo
-    const newLogos = new Map(props.customLogos)
-    newLogos.set(brand, dataUrl)
+    const newLogos = withUploadedLogo(props.customLogos, brand, dataUrl)
     emit('update:customLogos', newLogos)
-    emit('logoUploaded', brand)  // 发送上传成功事件
+    emit('logoUploaded', brand, newLogos)  // 发送上传成功事件
 
     // 清空input，允许重复上传同一文件
     target.value = ''
@@ -234,8 +234,7 @@ async function handleLogoUpload(brand: string, event: Event) {
 
 // 删除自定义Logo
 function removeCustomLogo(brand: string) {
-  const newLogos = new Map(props.customLogos)
-  newLogos.delete(brand)
+  const newLogos = withoutCustomLogo(props.customLogos, brand)
   emit('update:customLogos', newLogos)
 }
 
