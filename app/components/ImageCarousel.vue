@@ -227,7 +227,7 @@
     </div>
 
     <!-- Thumbnails Carousel - 优化样式 -->
-    <div v-if="files.length > 1" class="border-t border-border/50 bg-background/30" style="height: 96px; flex-shrink: 0; padding: 8px 0;">
+    <div class="border-t border-border/50 bg-background/30" style="height: 96px; flex-shrink: 0; padding: 8px 0;">
       <div class="flex items-center gap-1.5 h-full px-2">
         <!-- Thumbnail List - 无箭头，纯滚动 -->
         <div ref="thumbnailContainer" class="flex-1 overflow-x-auto h-full scrollbar-hide smooth-scroll">
@@ -248,6 +248,16 @@
                 height: '68px'
               }"
             >
+              <button
+                class="absolute right-1 top-1 z-10 flex h-4 w-4 items-center justify-center rounded-full bg-black/70 text-white transition hover:bg-black/85"
+                type="button"
+                aria-label="删除图片"
+                @click.stop="removeImage(index)"
+              >
+                <svg class="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
               <img
                 v-if="getThumbnailUrl(file)"
                 :src="getThumbnailUrl(file)"
@@ -260,9 +270,29 @@
                 </svg>
               </div>
             </div>
+
+            <button
+              class="flex h-full w-[56px] flex-shrink-0 items-center justify-center rounded-lg border border-dashed border-border bg-background/80 text-muted-foreground transition hover:border-primary/60 hover:bg-primary/5 hover:text-primary"
+              type="button"
+              aria-label="继续上传图片"
+              @click="triggerAppendInput"
+            >
+              <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+              </svg>
+            </button>
           </div>
         </div>
       </div>
+
+      <input
+        ref="appendInput"
+        type="file"
+        multiple
+        accept="image/*"
+        class="hidden"
+        @change="handleAppendFiles"
+      />
     </div>
   </div>
 </template>
@@ -289,10 +319,13 @@ const props = defineProps<{
 const emit = defineEmits<{
   'update:current-index': [index: number]
   'update:exif-overrides': [value: Record<string, any>]
+  'append-files': [files: File[]]
+  'remove-file': [index: number]
 }>()
 
 // 缩略图容器引用
 const thumbnailContainer = ref<HTMLElement | null>(null)
+const appendInput = ref<HTMLInputElement | null>(null)
 
 // EXIF 信息展开状态
 const exifExpanded = ref(false)
@@ -488,6 +521,25 @@ function getThumbnailUrl(file: File): string | null {
 function selectImage(index: number) {
   emit('update:current-index', index)
   scrollToCurrentThumbnail()
+}
+
+function triggerAppendInput() {
+  appendInput.value?.click()
+}
+
+function handleAppendFiles(event: Event) {
+  const target = event.target as HTMLInputElement
+  const files = Array.from(target.files || []).filter(file => file.type.startsWith('image/'))
+
+  if (files.length > 0) {
+    emit('append-files', files)
+  }
+
+  target.value = ''
+}
+
+function removeImage(index: number) {
+  emit('remove-file', index)
 }
 
 function prevImage() {

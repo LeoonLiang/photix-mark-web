@@ -13,7 +13,7 @@
     :brand-stats="brandStats"
     :no-brand-count="noBrandCount"
     :custom-logos="customLogos"
-    @reset="resetApp"
+    @reset="handleReset"
     @update:image-states="imageStates = $event"
     @update:processed-cache="processedCache = $event"
     @update:preview-urls="previewUrls = $event"
@@ -113,7 +113,19 @@ async function handleUpload(files: File[]) {
 }
 
 // 重置应用
-async function resetApp() {
+async function handleReset(force = false) {
+  if (force) {
+    uploadedFiles.value = []
+    imageStates.value.clear()
+    processedCache.value.clear()
+    previewUrls.value.clear()
+    exifCache.value.clear()
+    brandStats.value.clear()
+    noBrandCount.value = 0
+    customLogos.value.clear()
+    return
+  }
+
   const confirmed = await confirm({
     title: '重新开始',
     message: '确定要重新开始吗？当前的编辑将丢失。',

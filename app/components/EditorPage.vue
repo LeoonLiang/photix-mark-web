@@ -17,7 +17,7 @@
           <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
           </svg>
-          重新选择
+          重新开始
         </Button>
       </div>
     </header>
@@ -65,13 +65,15 @@
                 :current-index="currentIndex"
                 :processors="currentTemplate.processors"
                 :user-config="currentConfig"
-                :preview-urls="previewUrls"
+                :preview-urls="localPreviewUrls"
                 :custom-logos="customLogos"
-                :image-states="imageStates"
-                :exif-cache="exifCache"
+                :image-states="localImageStates"
+                :exif-cache="localExifCache"
                 :current-exif="currentExif"
                 @update:current-index="currentIndex = $event"
                 @update:exif-overrides="updateCurrentExifOverrides"
+                @append-files="handleAppendFiles"
+                @remove-file="handleRemoveFile"
               />
             </ClientOnly>
           </div>
@@ -194,13 +196,15 @@
               :current-index="currentIndex"
               :processors="currentTemplate.processors"
               :user-config="currentConfig"
-              :preview-urls="previewUrls"
+              :preview-urls="localPreviewUrls"
               :custom-logos="customLogos"
-              :image-states="imageStates"
-              :exif-cache="exifCache"
+              :image-states="localImageStates"
+              :exif-cache="localExifCache"
               :current-exif="currentExif"
               @update:current-index="currentIndex = $event"
               @update:exif-overrides="updateCurrentExifOverrides"
+              @append-files="handleAppendFiles"
+              @remove-file="handleRemoveFile"
             />
           </ClientOnly>
         </div>
@@ -367,7 +371,7 @@ const props = defineProps<Props>()
 
 // Emits
 const emit = defineEmits<{
-  reset: []
+  reset: [force?: boolean]
   'update:imageStates': [value: Map<File, ImageState>]
   'update:processedCache': [value: Map<File, { canvas: HTMLCanvasElement; blob: Blob }>]
   'update:previewUrls': [value: Map<File, string>]
@@ -382,6 +386,13 @@ const { confirm } = useConfirm()
 
 // 模板管理
 const { templates } = useTemplates()
+const { readExif } = useExif()
+
+const files = ref<File[]>([...props.files])
+const localImageStates = ref(new Map(props.imageStates))
+const localProcessedCache = ref(new Map(props.processedCache))
+const localPreviewUrls = ref(new Map(props.previewUrls))
+const localExifCache = ref(new Map(props.exifCache))
 
 // 当前预览索引
 const currentIndex = ref(0)
@@ -397,7 +408,39 @@ const currentExif = ref<Record<string, any>>({})
 
 const currentExifOverrides = ref<Record<string, any>>({})
 
-const currentFile = computed(() => props.files[currentIndex.value])
+const currentFile = computed(() => files.value[currentIndex.value])
+
+function syncLocalStateFromProps() {
+  files.value = [...props.files]
+  localImageStates.value = new Map(props.imageStates)
+  localProcessedCache.value = new Map(props.processedCache)
+  localPreviewUrls.value = new Map(props.previewUrls)
+  localExifCache.value = new Map(props.exifCache)
+
+  if (files.value.length === 0) {
+    currentIndex.value = 0
+    return
+  }
+
+  if (currentIndex.value >= files.value.length) {
+    currentIndex.value = files.value.length - 1
+  }
+}
+
+function emitImageStates(nextStates: Map<File, ImageState>) {
+  localImageStates.value = nextStates
+  emit('update:imageStates', nextStates)
+}
+
+function emitProcessedCache(nextCache: Map<File, { canvas: HTMLCanvasElement; blob: Blob }>) {
+  localProcessedCache.value = nextCache
+  emit('update:processedCache', nextCache)
+}
+
+function emitPreviewUrls(nextUrls: Map<File, string>) {
+  localPreviewUrls.value = nextUrls
+  emit('update:previewUrls', nextUrls)
+}
 
 // 根据ID获取模板对象
 const currentTemplate = computed<TemplateConfig>(() => {
@@ -466,12 +509,26 @@ const mobileTabs = [
   }
 ]
 
+watch(() => props.files, syncLocalStateFromProps, { immediate: true })
+watch(() => props.imageStates, (value) => {
+  localImageStates.value = new Map(value)
+}, { deep: true })
+watch(() => props.processedCache, (value) => {
+  localProcessedCache.value = new Map(value)
+}, { deep: true })
+watch(() => props.previewUrls, (value) => {
+  localPreviewUrls.value = new Map(value)
+}, { deep: true })
+watch(() => props.exifCache, (value) => {
+  localExifCache.value = new Map(value)
+}, { deep: true })
+
 // 加载当前图片的状态到UI
 function loadCurrentImageState() {
-  const currentFile = props.files[currentIndex.value]
+  const currentFile = files.value[currentIndex.value]
   if (!currentFile) return
 
-  const state = props.imageStates.get(currentFile)
+  const state = localImageStates.value.get(currentFile)
   if (state) {
     if (currentTemplateId.value !== state.templateId) {
       currentTemplateId.value = state.templateId
@@ -489,26 +546,26 @@ function loadCurrentImageState() {
 
 // 保存当前UI状态到当前图片
 function saveCurrentImageState() {
-  const currentFile = props.files[currentIndex.value]
+  const currentFile = files.value[currentIndex.value]
   if (!currentFile) return
 
-  const newImageStates = new Map(props.imageStates)
+  const newImageStates = new Map(localImageStates.value)
   newImageStates.set(currentFile, {
     templateId: currentTemplateId.value,
     config: { ...currentConfig.value },
     exifOverrides: { ...currentExifOverrides.value }
   })
-  emit('update:imageStates', newImageStates)
+  emitImageStates(newImageStates)
 }
 
 function getMergedExifForFile(file: File, overrides?: Record<string, any>): Record<string, any> {
-  const state = props.imageStates.get(file)
-  const baseExif = props.exifCache.get(file)
+  const state = localImageStates.value.get(file)
+  const baseExif = localExifCache.value.get(file)
   return mergeExifWithOverrides(baseExif, overrides ?? state?.exifOverrides)
 }
 
 function getEffectiveImageState(file: File): ImageState | undefined {
-  const state = props.imageStates.get(file)
+  const state = localImageStates.value.get(file)
 
   if (file === currentFile.value) {
     return {
@@ -533,16 +590,16 @@ function getConfigWithCustomLogo(file: File, config: Record<string, any>) {
 
 function updateCurrentExifOverrides(overrides: Record<string, any>) {
   currentExifOverrides.value = { ...overrides }
-  currentExif.value = getMergedExifForFile(props.files[currentIndex.value], overrides)
+  currentExif.value = getMergedExifForFile(files.value[currentIndex.value], overrides)
 
-  const currentFile = props.files[currentIndex.value]
+  const currentFile = files.value[currentIndex.value]
   if (currentFile) {
-    const newProcessedCache = new Map(props.processedCache)
-    const newPreviewUrls = new Map(props.previewUrls)
+    const newProcessedCache = new Map(localProcessedCache.value)
+    const newPreviewUrls = new Map(localPreviewUrls.value)
     newProcessedCache.delete(currentFile)
     newPreviewUrls.delete(currentFile)
-    emit('update:processedCache', newProcessedCache)
-    emit('update:previewUrls', newPreviewUrls)
+    emitProcessedCache(newProcessedCache)
+    emitPreviewUrls(newPreviewUrls)
   }
 
   saveCurrentImageState()
@@ -553,13 +610,18 @@ watch(currentIndex, () => {
   loadCurrentImageState()
 })
 
+watch(files, () => {
+  if (files.value.length === 0) return
+  loadCurrentImageState()
+})
+
 watch(
   () => {
-    const currentFile = props.files[currentIndex.value]
-    return currentFile ? props.exifCache.get(currentFile) : null
+    const currentFile = files.value[currentIndex.value]
+    return currentFile ? localExifCache.value.get(currentFile) : null
   },
   () => {
-    const currentFile = props.files[currentIndex.value]
+    const currentFile = files.value[currentIndex.value]
     if (!currentFile) return
     currentExif.value = getMergedExifForFile(currentFile, currentExifOverrides.value)
   },
@@ -568,38 +630,38 @@ watch(
 
 // 监听模板选择变化
 watch(currentTemplateId, () => {
-  const currentFile = props.files[currentIndex.value]
+  const currentFile = files.value[currentIndex.value]
   if (currentFile) {
-    const newProcessedCache = new Map(props.processedCache)
-    const newPreviewUrls = new Map(props.previewUrls)
+    const newProcessedCache = new Map(localProcessedCache.value)
+    const newPreviewUrls = new Map(localPreviewUrls.value)
     newProcessedCache.delete(currentFile)
     newPreviewUrls.delete(currentFile)
-    emit('update:processedCache', newProcessedCache)
-    emit('update:previewUrls', newPreviewUrls)
+    emitProcessedCache(newProcessedCache)
+    emitPreviewUrls(newPreviewUrls)
   }
   saveCurrentImageState()
 })
 
 // 监听配置变化
 watch(currentConfig, () => {
-  const currentFile = props.files[currentIndex.value]
+  const currentFile = files.value[currentIndex.value]
   if (currentFile) {
-    const newProcessedCache = new Map(props.processedCache)
-    const newPreviewUrls = new Map(props.previewUrls)
+    const newProcessedCache = new Map(localProcessedCache.value)
+    const newPreviewUrls = new Map(localPreviewUrls.value)
     newProcessedCache.delete(currentFile)
     newPreviewUrls.delete(currentFile)
-    emit('update:processedCache', newProcessedCache)
-    emit('update:previewUrls', newPreviewUrls)
+    emitProcessedCache(newProcessedCache)
+    emitPreviewUrls(newPreviewUrls)
   }
   saveCurrentImageState()
 
   // 同步配置到所有使用相同模板的其他图片
   const currentTemplateIdValue = currentTemplateId.value
-  const newImageStates = new Map(props.imageStates)
-  const newProcessedCache = new Map(props.processedCache)
-  const newPreviewUrls = new Map(props.previewUrls)
+  const newImageStates = new Map(localImageStates.value)
+  const newProcessedCache = new Map(localProcessedCache.value)
+  const newPreviewUrls = new Map(localPreviewUrls.value)
 
-  props.files.forEach(file => {
+  files.value.forEach(file => {
     if (file === currentFile) return
 
     const state = newImageStates.get(file)
@@ -614,9 +676,9 @@ watch(currentConfig, () => {
     }
   })
 
-  emit('update:imageStates', newImageStates)
-  emit('update:processedCache', newProcessedCache)
-  emit('update:previewUrls', newPreviewUrls)
+  emitImageStates(newImageStates)
+  emitProcessedCache(newProcessedCache)
+  emitPreviewUrls(newPreviewUrls)
 }, { deep: true })
 
 // 监听自定义Logo变化
@@ -628,7 +690,7 @@ const customLogos = computed({
 const dynamicBrandStats = computed(() => {
   const stats = new Map<string, number>()
 
-  for (const file of props.files) {
+  for (const file of files.value) {
     const exif = getMergedExifForFile(file)
     const brand = exif.Make?.trim()
     if (brand) {
@@ -642,7 +704,7 @@ const dynamicBrandStats = computed(() => {
 const dynamicNoBrandCount = computed(() => {
   let count = 0
 
-  for (const file of props.files) {
+  for (const file of files.value) {
     const exif = getMergedExifForFile(file)
     if (!exif.Make?.trim()) {
       count++
@@ -658,6 +720,73 @@ function handleTemplateSelect(id: string) {
   currentConfig.value = {}
 }
 
+async function handleAppendFiles(newFiles: File[]) {
+  if (newFiles.length === 0) return
+
+  const nextImageStates = new Map(localImageStates.value)
+  const nextExifCache = new Map(localExifCache.value)
+
+  for (const file of newFiles) {
+    nextImageStates.set(file, {
+      templateId: 'noProcess',
+      config: {},
+      exifOverrides: {}
+    })
+  }
+
+  files.value = [...files.value, ...newFiles]
+  emitImageStates(nextImageStates)
+
+  for (const file of newFiles) {
+    try {
+      const exif = await readExif(file)
+      nextExifCache.set(file, exif)
+    } catch (error) {
+      console.error('Failed to read EXIF for appended file:', error)
+      nextExifCache.set(file, {})
+    }
+  }
+
+  localExifCache.value = nextExifCache
+  emitImageStates(nextImageStates)
+}
+
+function handleRemoveFile(index: number) {
+  const fileToRemove = files.value[index]
+  if (!fileToRemove) return
+
+  const previousIndex = currentIndex.value
+  const nextFiles = files.value.filter((_, fileIndex) => fileIndex !== index)
+  const nextImageStates = new Map(localImageStates.value)
+  const nextProcessedCache = new Map(localProcessedCache.value)
+  const nextPreviewUrls = new Map(localPreviewUrls.value)
+  const nextExifCache = new Map(localExifCache.value)
+
+  nextImageStates.delete(fileToRemove)
+  nextProcessedCache.delete(fileToRemove)
+  nextPreviewUrls.delete(fileToRemove)
+  nextExifCache.delete(fileToRemove)
+
+  files.value = nextFiles
+  localExifCache.value = nextExifCache
+  emitImageStates(nextImageStates)
+  emitProcessedCache(nextProcessedCache)
+  emitPreviewUrls(nextPreviewUrls)
+
+  if (nextFiles.length === 0) {
+    emit('reset', true)
+    return
+  }
+
+  if (index < previousIndex) {
+    currentIndex.value = previousIndex - 1
+  } else if (index === previousIndex) {
+    currentIndex.value = Math.min(index, nextFiles.length - 1)
+  }
+
+  loadCurrentImageState()
+}
+
 // 处理Logo上传成功
 async function handleLogoUploaded(brand: string, updatedLogos: Map<string, string>) {
   const brandName = brand || '无品牌'
@@ -666,10 +795,10 @@ async function handleLogoUploaded(brand: string, updatedLogos: Map<string, strin
   console.log('[EditorPage] logoUploaded event received', {
     brand,
     updatedLogoKeys: Array.from(updatedLogos.keys()),
-    fileCount: props.files.length
+    fileCount: files.value.length
   })
 
-  for (const file of props.files) {
+  for (const file of files.value) {
     const state = getEffectiveImageState(file)
     const exif = getMergedExifForFile(file)
     const fileBrand = exif?.Make?.trim()
@@ -707,8 +836,8 @@ async function handleLogoUploaded(brand: string, updatedLogos: Map<string, strin
 
   try {
     let processedCount = 0
-    const newProcessedCache = new Map(props.processedCache)
-    const newPreviewUrls = new Map(props.previewUrls)
+    const newProcessedCache = new Map(localProcessedCache.value)
+    const newPreviewUrls = new Map(localPreviewUrls.value)
 
     for (const file of filesToReprocess) {
       const state = getEffectiveImageState(file)
@@ -745,8 +874,8 @@ async function handleLogoUploaded(brand: string, updatedLogos: Map<string, strin
       }
     }
 
-    emit('update:processedCache', newProcessedCache)
-    emit('update:previewUrls', newPreviewUrls)
+    emitProcessedCache(newProcessedCache)
+    emitPreviewUrls(newPreviewUrls)
 
     success(`${brandName} Logo 已应用到 ${processedCount} 张图片`)
   } catch (error) {
@@ -759,15 +888,15 @@ async function handleLogoUploaded(brand: string, updatedLogos: Map<string, strin
 async function applyToAll() {
   const confirmed = await confirm({
     title: '应用到全部图片',
-    message: `确定要将当前模板应用到全部 ${props.files.length} 张图片吗？`,
+    message: `确定要将当前模板应用到全部 ${files.value.length} 张图片吗？`,
     confirmText: '应用',
     cancelText: '取消'
   })
 
   if (!confirmed) return
 
-  const newImageStates = new Map(props.imageStates)
-  props.files.forEach(file => {
+  const newImageStates = new Map(localImageStates.value)
+  files.value.forEach(file => {
     const state = getEffectiveImageState(file)
     newImageStates.set(file, {
       templateId: currentTemplateId.value,
@@ -775,18 +904,18 @@ async function applyToAll() {
       exifOverrides: { ...(state?.exifOverrides || {}) }
     })
   })
-  emit('update:imageStates', newImageStates)
+  emitImageStates(newImageStates)
 
   if (currentTemplateId.value === 'noProcess') {
-    emit('update:processedCache', new Map())
-    emit('update:previewUrls', new Map())
+    emitProcessedCache(new Map())
+    emitPreviewUrls(new Map())
     success('已应用到所有图片！')
     return
   }
 
   try {
     const results = await processBatch(
-      props.files,
+      files.value,
       currentTemplate.value.processors,
       currentConfig.value,
       (file) => {
@@ -797,8 +926,8 @@ async function applyToAll() {
       }
     )
 
-    const newProcessedCache = new Map(props.processedCache)
-    const newPreviewUrls = new Map(props.previewUrls)
+    const newProcessedCache = new Map(localProcessedCache.value)
+    const newPreviewUrls = new Map(localPreviewUrls.value)
 
     results.forEach(result => {
       newProcessedCache.set(result.file, {
@@ -810,8 +939,8 @@ async function applyToAll() {
       newPreviewUrls.set(result.file, previewUrl)
     })
 
-    emit('update:processedCache', newProcessedCache)
-    emit('update:previewUrls', newPreviewUrls)
+    emitProcessedCache(newProcessedCache)
+    emitPreviewUrls(newPreviewUrls)
 
     success('处理完成！所有图片已应用模板。')
   } catch (error) {
@@ -840,7 +969,7 @@ async function handleApplyToSelected(selectedFiles: File[]) {
 
   if (!confirmed) return
 
-  const newImageStates = new Map(props.imageStates)
+  const newImageStates = new Map(localImageStates.value)
   selectedFiles.forEach(file => {
     const state = getEffectiveImageState(file)
     newImageStates.set(file, {
@@ -849,17 +978,17 @@ async function handleApplyToSelected(selectedFiles: File[]) {
       exifOverrides: { ...(state?.exifOverrides || {}) }
     })
   })
-  emit('update:imageStates', newImageStates)
+  emitImageStates(newImageStates)
 
   if (currentTemplateId.value === 'noProcess') {
-    const newProcessedCache = new Map(props.processedCache)
-    const newPreviewUrls = new Map(props.previewUrls)
+    const newProcessedCache = new Map(localProcessedCache.value)
+    const newPreviewUrls = new Map(localPreviewUrls.value)
     selectedFiles.forEach(file => {
       newProcessedCache.delete(file)
       newPreviewUrls.delete(file)
     })
-    emit('update:processedCache', newProcessedCache)
-    emit('update:previewUrls', newPreviewUrls)
+    emitProcessedCache(newProcessedCache)
+    emitPreviewUrls(newPreviewUrls)
     success('已应用到选中的图片！')
     return
   }
@@ -877,8 +1006,8 @@ async function handleApplyToSelected(selectedFiles: File[]) {
       }
     )
 
-    const newProcessedCache = new Map(props.processedCache)
-    const newPreviewUrls = new Map(props.previewUrls)
+    const newProcessedCache = new Map(localProcessedCache.value)
+    const newPreviewUrls = new Map(localPreviewUrls.value)
 
     results.forEach(result => {
       newProcessedCache.set(result.file, {
@@ -890,8 +1019,8 @@ async function handleApplyToSelected(selectedFiles: File[]) {
       newPreviewUrls.set(result.file, previewUrl)
     })
 
-    emit('update:processedCache', newProcessedCache)
-    emit('update:previewUrls', newPreviewUrls)
+    emitProcessedCache(newProcessedCache)
+    emitPreviewUrls(newPreviewUrls)
 
     success(`处理完成！已应用到 ${selectedFiles.length} 张图片。`)
   } catch (error) {
@@ -910,7 +1039,7 @@ async function downloadCurrent() {
 
     let blob: Blob
 
-    const cached = activeFile === currentFile.value ? undefined : props.processedCache.get(activeFile)
+    const cached = activeFile === currentFile.value ? undefined : localProcessedCache.value.get(activeFile)
     if (cached) {
       blob = cached.blob
     } else {
@@ -927,9 +1056,9 @@ async function downloadCurrent() {
       )
       blob = await canvasToBlob(canvas)
 
-      const newProcessedCache = new Map(props.processedCache)
+      const newProcessedCache = new Map(localProcessedCache.value)
       newProcessedCache.set(activeFile, { canvas, blob })
-      emit('update:processedCache', newProcessedCache)
+      emitProcessedCache(newProcessedCache)
     }
 
     await downloadImages([{
@@ -946,7 +1075,7 @@ async function downloadCurrent() {
 
 // 下载全部图片
 async function downloadAll() {
-  if (props.files.length === 0) return
+  if (files.value.length === 0) return
 
   try {
     downloading.value = true
@@ -954,17 +1083,17 @@ async function downloadAll() {
     let skippedCount = 0
     let processedCount = 0
 
-    const totalToProcess = props.files.filter(file => {
-      const state = props.imageStates.get(file)
+    const totalToProcess = files.value.filter(file => {
+      const state = localImageStates.value.get(file)
       return state && state.templateId !== 'noProcess'
     }).length
 
     downloadProgress.value = { current: 0, total: totalToProcess, percent: 0 }
 
-    const newProcessedCache = new Map(props.processedCache)
+    const newProcessedCache = new Map(localProcessedCache.value)
 
-    for (let i = 0; i < props.files.length; i++) {
-      const file = props.files[i]
+    for (let i = 0; i < files.value.length; i++) {
+      const file = files.value[i]
       const state = getEffectiveImageState(file)
       if (!state) continue
 
@@ -1005,7 +1134,7 @@ async function downloadAll() {
       }
     }
 
-    emit('update:processedCache', newProcessedCache)
+    emitProcessedCache(newProcessedCache)
 
     if (results.length === 0) {
       showError('没有已处理的图片可以导出')
