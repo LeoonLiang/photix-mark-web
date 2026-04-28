@@ -84,7 +84,7 @@
           <div class="h-full overflow-y-auto space-y-4" style="padding-right: 4px;">
           <!-- Template Selection -->
           <Card class="bg-card/80 backdrop-blur-xl shadow-lg shadow-primary/5">
-            <CardHeader class="border-b bg-black/10 py-3">
+            <CardHeader class="border-b bg-slate-100 py-3">
               <CardTitle class="text-base">模板选择</CardTitle>
             </CardHeader>
             <CardContent>
@@ -98,7 +98,7 @@
 
           <!-- Template Configuration -->
           <Card v-if="currentTemplateId !== 'noProcess'" class="bg-card/80 backdrop-blur-xl shadow-lg shadow-primary/5">
-            <CardHeader class="border-b bg-black/10 py-3">
+            <CardHeader class="border-b bg-slate-100 py-3">
               <CardTitle class="text-base">模板配置</CardTitle>
             </CardHeader>
             <CardContent>
@@ -112,7 +112,7 @@
 
           <!-- Brand Logo Manager -->
           <Card v-if="files.length > 0" class="bg-card/80 backdrop-blur-xl shadow-lg shadow-primary/5">
-            <CardHeader class="border-b bg-black/10 py-3">
+            <CardHeader class="border-b bg-slate-100 py-3">
               <CardTitle class="text-base">品牌 Logo</CardTitle>
             </CardHeader>
             <CardContent>
