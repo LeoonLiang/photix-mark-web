@@ -11,5 +11,6 @@ export { folderNameParams } from './folderNameParams'
 export { centeredWatermark } from './centeredWatermark'
 export { sidebarWatermark } from './sidebarWatermark'
 export { centeredWatermark2 } from './centeredWatermark2'
+export { personalText } from './personalText'
 
 export * from './types'

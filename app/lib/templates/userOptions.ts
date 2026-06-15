@@ -23,6 +23,11 @@ export function getTemplateDefaultConfig(template: TemplateConfig): Record<strin
     shadowEnabled: template.userOptions.shadow?.shadowEnabled ?? true,
     shadowColor: template.userOptions.shadow?.shadowColor ?? 'rgba(0,0,0,0.15)',
     shadowRadius: template.userOptions.shadow?.shadowRadius ?? 0.006,
-    blurRadius: template.userOptions.blur?.blurRadius ?? 0.03
+    blurRadius: template.userOptions.blur?.blurRadius ?? 0.03,
+    personalText: template.userOptions.personalText?.text ?? 'photographed by leoon '.toUpperCase(),
+    textMargin: template.userOptions.personalText?.margin ?? 0.04,
+    textFontSize: template.userOptions.personalText?.fontSize ?? 0.045,
+    textOpacity: template.userOptions.personalText?.opacity ?? 0.9,
+    textPosition: template.userOptions.personalText?.position ?? 'bottom-center'
   }
 }

@@ -232,6 +232,98 @@
       </div>
     </section>
 
+    <section v-if="hasPersonalTextConfig" class="config-card">
+      <div class="section-head">
+        <h3 class="section-title">个性文字</h3>
+        <button @click="resetPersonalText" class="reset-chip">重置本组</button>
+      </div>
+      <div class="space-y-2.5 sm:space-y-3">
+        <div class="space-y-2">
+          <label class="field-label">文字内容</label>
+          <textarea
+            :value="localConfig.personalText"
+            rows="2"
+            class="text-area-input"
+            @input="updateConfig('personalText', ($event.target as HTMLTextAreaElement).value)"
+          />
+        </div>
+
+        <div class="space-y-2">
+          <div class="range-head">
+            <label class="field-label">边距</label>
+            <div class="range-actions">
+              <span class="value-pill">{{ formatRangeValue(localConfig.textMargin) }}</span>
+              <button @click="resetField('textMargin')" class="reset-chip">重置</button>
+            </div>
+          </div>
+          <input
+            type="range"
+            min="0"
+            max="0.12"
+            step="0.001"
+            :value="localConfig.textMargin"
+            @input="updateConfig('textMargin', Number(($event.target as HTMLInputElement).value))"
+            class="slider-input"
+          />
+        </div>
+
+        <div class="space-y-2">
+          <div class="range-head">
+            <label class="field-label">字体大小</label>
+            <div class="range-actions">
+              <span class="value-pill">{{ formatRangeValue(localConfig.textFontSize) }}</span>
+              <button @click="resetField('textFontSize')" class="reset-chip">重置</button>
+            </div>
+          </div>
+          <input
+            type="range"
+            min="0.009"
+            max="0.05"
+            step="0.001"
+            :value="localConfig.textFontSize"
+            @input="updateConfig('textFontSize', Number(($event.target as HTMLInputElement).value))"
+            class="slider-input"
+          />
+        </div>
+
+        <div class="space-y-2">
+          <div class="range-head">
+            <label class="field-label">字体透明度</label>
+            <div class="range-actions">
+              <span class="value-pill">{{ formatOpacityValue(localConfig.textOpacity) }}</span>
+              <button @click="resetField('textOpacity')" class="reset-chip">重置</button>
+            </div>
+          </div>
+          <input
+            type="range"
+            min="0"
+            max="1"
+            step="0.01"
+            :value="localConfig.textOpacity"
+            @input="updateConfig('textOpacity', Number(($event.target as HTMLInputElement).value))"
+            class="slider-input"
+          />
+        </div>
+
+        <div class="space-y-2">
+          <div class="range-head">
+            <label class="field-label">位置</label>
+            <button @click="resetField('textPosition')" class="reset-chip">重置</button>
+          </div>
+          <div class="content-pills">
+            <button
+              v-for="option in textPositionOptions"
+              :key="option.value"
+              @click="updateConfig('textPosition', option.value)"
+              :class="pillClass(localConfig.textPosition === option.value)"
+            >
+              {{ option.label }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <section v-if="hasLogoConfig || hasAnyExifField" class="config-card">
       <div class="section-head">
         <h3 class="section-title">内容</h3>
@@ -348,6 +440,14 @@ const hasBorderConfig = computed(() => props.template.userOptions.border !== und
 const hasShadowConfig = computed(() => props.template.userOptions.shadow !== undefined)
 const hasBlurConfig = computed(() => props.template.userOptions.blur !== undefined)
 const hasLayoutConfig = computed(() => props.template.userOptions.layout !== undefined)
+const hasPersonalTextConfig = computed(() => props.template.userOptions.personalText !== undefined)
+
+const textPositionOptions = [
+  { label: '下中', value: 'bottom-center' },
+  { label: '上中', value: 'top-center' },
+  { label: '左下', value: 'left-bottom' },
+  { label: '右下', value: 'right-bottom' }
+]
 
 const shadowColorInputValue = computed(() => {
   const color = localConfig.value.shadowColor
@@ -439,8 +539,32 @@ function resetContent() {
   pushConfig(nextValue)
 }
 
+function resetPersonalText() {
+  const nextValue = { ...localConfig.value }
+  const keys = [
+    'personalText',
+    'textMargin',
+    'textFontSize',
+    'textOpacity',
+    'textPosition',
+    'textColor'
+  ]
+
+  for (const key of keys) {
+    if (key in defaults.value) {
+      nextValue[key] = defaults.value[key]
+    }
+  }
+
+  pushConfig(nextValue)
+}
+
 function formatRangeValue(value: number) {
   return Number(value || 0).toFixed(3)
+}
+
+function formatOpacityValue(value: number) {
+  return Number(value ?? 0).toFixed(2)
 }
 
 function pillClass(active: boolean) {
@@ -519,6 +643,10 @@ watch(() => props.modelValue, (value) => {
 
 .slider-input {
   @apply h-2 w-full cursor-pointer appearance-none rounded-full bg-slate-200;
+}
+
+.text-area-input {
+  @apply w-full resize-none rounded-xl border border-slate-200 bg-white px-3 py-2 text-[13px] font-medium text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-slate-400 sm:rounded-2xl sm:text-sm;
 }
 
 .range-head {

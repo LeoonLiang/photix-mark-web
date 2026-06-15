@@ -119,7 +119,8 @@ const templateImages: Record<string, string> = {
   'folderNameParams': '/demo/5_时间戳参数.JPG',
   'centeredWatermark': '/demo/8_居中样式.JPG',
   'centeredWatermark2': '/demo/7_居中样式2.JPG',
-  'sidebarWatermark': '/demo/9_侧边栏样式.JPG'
+  'sidebarWatermark': '/demo/9_侧边栏样式.JPG',
+  'personalText': '/demo/10_个性文字.jpg',
 }
 
 function getTemplateImage(templateId: string): string | null {

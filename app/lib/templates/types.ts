@@ -57,6 +57,15 @@ export interface TemplateUserOptions {
   blur?: {
     blurRadius?: number
   }
+
+  /** 个性文字控制 */
+  personalText?: {
+    text?: string
+    margin?: number
+    fontSize?: number
+    opacity?: number
+    position?: 'bottom-center' | 'top-center' | 'left-bottom' | 'right-bottom'
+  }
 }
 
 /**

@@ -9,7 +9,8 @@ import {
   folderNameParams,
   centeredWatermark,
   sidebarWatermark,
-  centeredWatermark2
+  centeredWatermark2,
+  personalText
 } from '~/lib/templates'
 
 /**
@@ -29,7 +30,8 @@ export function useTemplates() {
     folderNameParams,
     centeredWatermark,
     sidebarWatermark,
-    centeredWatermark2
+    centeredWatermark2,
+    personalText
   ])
 
   /**

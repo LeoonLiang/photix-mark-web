@@ -20,6 +20,7 @@ import { ConcatProcessor } from './concat'
 import { ResizeProcessor } from './resize'
 import { CropProcessor } from './crop'
 import { FlexLayoutProcessor } from './flexLayout'
+import { PersonalTextOverlayProcessor } from './personalTextOverlay'
 import { registerProcessor } from './registry'
 
 /**
@@ -40,6 +41,7 @@ export function initProcessors() {
   registerProcessor(ResizeProcessor)
   registerProcessor(CropProcessor)
   registerProcessor(FlexLayoutProcessor)
+  registerProcessor(PersonalTextOverlayProcessor)
 
   console.log('[Processors] All processors initialized')
 }
