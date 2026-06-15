@@ -69,6 +69,12 @@ export const blurBackground: TemplateConfig = {
     {
       processor_name: 'resize',
       scale: 0.88,  // 增大原图比例
+      scale_from_margin: {
+        key: 'imageMargin',
+        default_margin: 0.12,
+        min_margin: 0.04,
+        max_margin: 0.22
+      },
       target_index: 0
     },
     // 7. 将原图叠加到模糊背景上，居中偏上
@@ -77,6 +83,13 @@ export const blurBackground: TemplateConfig = {
       horizontal_alignment: 'center',
       vertical_alignment: 'center',
       weights: [0, -5],  // 稍微往上偏移
+      weights_from_margin: {
+        key: 'imageMargin',
+        default_margin: 0.12,
+        min_margin: 0.04,
+        max_margin: 0.22,
+        default_weights: [0, -5]
+      },
       select: [4, 0]  // 模糊背景(buffer[4]) + 原图(buffer[0])
     },
     // 8. 将文字叠加在底部
@@ -85,6 +98,13 @@ export const blurBackground: TemplateConfig = {
       horizontal_alignment: 'center',
       vertical_alignment: 'bottom',
       weights: [0, -8],  // 距离底部一点点边距
+      weights_from_margin: {
+        key: 'imageMargin',
+        default_margin: 0.12,
+        min_margin: 0.04,
+        max_margin: 0.22,
+        default_weights: [0, -8]
+      },
       select: [5, 3]  // 前一步的合并图(buffer[5]) + 文字(buffer[3])
     }
   ],
@@ -110,6 +130,9 @@ export const blurBackground: TemplateConfig = {
       shadowEnabled: true,
       shadowColor: 'black',
       shadowRadius: 0.01
+    },
+    layout: {
+      imageMargin: 0.12
     },
     blur: {
       blurRadius: 0.05

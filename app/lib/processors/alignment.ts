@@ -130,8 +130,10 @@ export class AlignmentProcessor extends ImageProcessor {
     }
 
     // 应用权重偏移
-    if (config.weights && Array.isArray(config.weights) && config.weights.length === 2) {
-      const [xWeight, yWeight] = config.weights
+    const weights = this.resolveWeights(config)
+
+    if (weights) {
+      const [xWeight, yWeight] = weights
       // weights 使用百分比作为偏移
       x += (xWeight / 100) * baseWidth
       y += (yWeight / 100) * baseHeight
@@ -153,5 +155,34 @@ export class AlignmentProcessor extends ImageProcessor {
 
     // 否则视为固定像素
     return value
+  }
+
+  private resolveWeights(config: Record<string, any>): [number, number] | undefined {
+    if (config.weights_from_margin !== undefined) {
+      const options = typeof config.weights_from_margin === 'object'
+        ? config.weights_from_margin
+        : { key: config.weights_from_margin }
+      const key = options.key || 'imageMargin'
+      const defaultMargin = options.default_margin ?? 0.12
+      const minMargin = options.min_margin ?? 0.04
+      const maxMargin = options.max_margin ?? 0.22
+      const rawMargin = Number(config[key] ?? defaultMargin)
+      const margin = Math.min(Math.max(Number.isFinite(rawMargin) ? rawMargin : defaultMargin, minMargin), maxMargin)
+      const ratio = defaultMargin > 0 ? margin / defaultMargin : 1
+      const defaultWeights = Array.isArray(options.default_weights)
+        ? options.default_weights
+        : (Array.isArray(config.weights) ? config.weights : [0, 0])
+
+      return [
+        Number(defaultWeights[0] || 0) * ratio,
+        Number(defaultWeights[1] || 0) * ratio
+      ]
+    }
+
+    if (config.weights && Array.isArray(config.weights) && config.weights.length === 2) {
+      return config.weights
+    }
+
+    return undefined
   }
 }

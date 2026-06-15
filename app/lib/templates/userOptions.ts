@@ -16,6 +16,7 @@ export function getTemplateDefaultConfig(template: TemplateConfig): Record<strin
     secondaryTextColor: template.userOptions.colors?.secondaryTextColor ?? '#666666',
     backgroundColor: template.userOptions.background?.backgroundColor ?? '#FFFFFF',
     padding: template.userOptions.layout?.padding ?? 0.03,
+    imageMargin: template.userOptions.layout?.imageMargin ?? 0.12,
     showBorder: template.userOptions.border?.showBorder ?? true,
     borderColor: template.userOptions.border?.borderColor ?? '#E5E5E5',
     borderRadius: template.userOptions.border?.borderRadius ?? 0.01,

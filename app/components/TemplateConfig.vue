@@ -87,6 +87,24 @@
             class="slider-input"
           />
         </div>
+        <div v-if="hasLayout('imageMargin')" class="space-y-2">
+          <div class="range-head">
+            <label class="field-label">主图边距</label>
+            <div class="range-actions">
+              <span class="value-pill">{{ formatRangeValue(localConfig.imageMargin) }}</span>
+              <button @click="resetField('imageMargin')" class="reset-chip">重置</button>
+            </div>
+          </div>
+          <input
+            type="range"
+            min="0.04"
+            max="0.22"
+            step="0.001"
+            :value="localConfig.imageMargin"
+            @input="updateConfig('imageMargin', Number(($event.target as HTMLInputElement).value))"
+            class="slider-input"
+          />
+        </div>
       </div>
     </section>
 

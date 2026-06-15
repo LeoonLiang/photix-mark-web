@@ -124,7 +124,7 @@ export default defineNuxtConfig({
     defaults: {
       width: 1200,
       height: 630,
-      extension: 'jpg',
+      extension: 'png',
       alt: 'Photix Mark - 为你的摄影作品，优雅地附上专属水印与参数'
     }
   }

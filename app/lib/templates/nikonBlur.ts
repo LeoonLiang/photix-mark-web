@@ -80,6 +80,12 @@ export const nikonBlur: TemplateConfig = {
     {
       processor_name: 'resize',
       scale: 0.88,
+      scale_from_margin: {
+        key: 'imageMargin',
+        default_margin: 0.12,
+        min_margin: 0.04,
+        max_margin: 0.22
+      },
       target_index: 0
     },
     // 7. 将原图叠加到模糊背景上
@@ -88,6 +94,13 @@ export const nikonBlur: TemplateConfig = {
       horizontal_alignment: 'center',
       vertical_alignment: 'center',
       weights: [0, -5],
+      weights_from_margin: {
+        key: 'imageMargin',
+        default_margin: 0.12,
+        min_margin: 0.04,
+        max_margin: 0.22,
+        default_weights: [0, -5]
+      },
       select: [4, 0]  // 模糊背景 + 原图
     },
     // 8. 将文字叠加在底部
@@ -96,14 +109,19 @@ export const nikonBlur: TemplateConfig = {
       horizontal_alignment: 'center',
       vertical_alignment: 'bottom',
       weights: [0, -8],
+      weights_from_margin: {
+        key: 'imageMargin',
+        default_margin: 0.12,
+        min_margin: 0.04,
+        max_margin: 0.22,
+        default_weights: [0, -8]
+      },
       select: [5, 3]  // 前一步的合并图 + 文字
     }
   ],
 
   userOptions: {
     exifFields: {
-      showBrand: true,
-      showModel: true,
       showLens: false,
       showFocalLength: true,
       showAperture: true,
@@ -121,6 +139,9 @@ export const nikonBlur: TemplateConfig = {
       shadowEnabled: true,
       shadowColor: 'black',
       shadowRadius: 0.01
+    },
+    layout: {
+      imageMargin: 0.12
     },
     blur: {
       blurRadius: 0.05

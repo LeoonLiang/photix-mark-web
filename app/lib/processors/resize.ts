@@ -33,10 +33,12 @@ export class ResizeProcessor extends ImageProcessor {
     let newWidth = originalWidth
     let newHeight = originalHeight
 
-    if (config.scale !== undefined) {
+    const scale = this.resolveScale(config)
+
+    if (scale !== undefined) {
       // 使用 scale 参数（等比缩放）
-      newWidth = originalWidth * config.scale
-      newHeight = originalHeight * config.scale
+      newWidth = originalWidth * scale
+      newHeight = originalHeight * scale
     } else if (config.width !== undefined) {
       newWidth = this.calculateSize(config.width, originalWidth)
       // 保持宽高比
@@ -81,5 +83,23 @@ export class ResizeProcessor extends ImageProcessor {
 
     // 如果是 >1 的小数或整数，视为倍数
     return value * original
+  }
+
+  private resolveScale(config: Record<string, any>): number | undefined {
+    if (config.scale_from_margin !== undefined) {
+      const options = typeof config.scale_from_margin === 'object'
+        ? config.scale_from_margin
+        : { key: config.scale_from_margin }
+      const key = options.key || 'imageMargin'
+      const defaultMargin = options.default_margin ?? 0.12
+      const minMargin = options.min_margin ?? 0.04
+      const maxMargin = options.max_margin ?? 0.22
+      const rawMargin = Number(config[key] ?? defaultMargin)
+      const margin = Math.min(Math.max(Number.isFinite(rawMargin) ? rawMargin : defaultMargin, minMargin), maxMargin)
+
+      return 1 - margin
+    }
+
+    return config.scale
   }
 }

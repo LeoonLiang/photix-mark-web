@@ -36,6 +36,7 @@ export interface TemplateUserOptions {
   /** 版式间距控制 */
   layout?: {
     padding?: number
+    imageMargin?: number
   }
 
   /** 边框/圆角控制 */
