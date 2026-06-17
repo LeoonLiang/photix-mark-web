@@ -94,6 +94,25 @@
         </button>
       </div>
     </div>
+
+    <div class="mt-2 rounded-lg border border-dashed border-border bg-muted/30 px-3 py-2 text-[11px] leading-5 text-muted-foreground sm:text-xs">
+      想要更多模板？有BUG？可以到
+      <a
+        href="https://github.com/LeoonLiang/photix-mark-web/issues/4"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="font-medium text-primary underline-offset-2 hover:underline"
+      >
+        这里贴图反馈
+      </a>
+      ，也可以发邮件给我
+      <a
+        href="mailto:dsleoon@gmail.com"
+        class="font-medium text-primary underline-offset-2 hover:underline"
+      >
+        dsleoon@gmail.com
+      </a>
+    </div>
   </div>
 </template>
 
