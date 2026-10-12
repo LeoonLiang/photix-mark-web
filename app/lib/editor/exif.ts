@@ -113,20 +113,46 @@ export function formatShutterValue(value: unknown): string {
   return `1/${Math.round(1 / numeric)}s`
 }
 
-export function formatDateTimeValue(value: unknown): string {
+export const DATE_TIME_FORMAT_OPTIONS = [
+  { value: 'datetime', label: '年月日时分秒', example: '2026-10-12 14:30:45' },
+  { value: 'slash', label: '斜杠分隔', example: '2026/10/12 14:30:45' },
+  { value: 'dot', label: '圆点分隔', example: '2026.10.12 14:30:45' },
+  { value: 'chinese', label: '中文日期', example: '2026年10月12日 14:30:45' },
+  { value: 'minute', label: '精确到分钟', example: '2026-10-12 14:30' },
+  { value: 'date', label: '仅日期', example: '2026-10-12' }
+] as const
+
+export type DateTimeFormat = typeof DATE_TIME_FORMAT_OPTIONS[number]['value']
+export const DEFAULT_DATE_TIME_FORMAT: DateTimeFormat = 'datetime'
+
+export function formatDateTimeValue(value: unknown, format: DateTimeFormat = DEFAULT_DATE_TIME_FORMAT): string {
+  if (!hasExifValue(value)) return ''
+
   if (value instanceof Date) {
+    if (Number.isNaN(value.getTime())) return ''
     const year = value.getFullYear()
     const month = String(value.getMonth() + 1).padStart(2, '0')
     const day = String(value.getDate()).padStart(2, '0')
     const hour = String(value.getHours()).padStart(2, '0')
     const minute = String(value.getMinutes()).padStart(2, '0')
-    return `${year}-${month}-${day} ${hour}:${minute}`
+    const second = String(value.getSeconds()).padStart(2, '0')
+    value = `${year}-${month}-${day} ${hour}:${minute}:${second}`
   }
 
   const raw = String(value).trim()
-  return raw
-    .replace(/^(\d{4}):(\d{2}):(\d{2})/, '$1-$2-$3')
-    .replace(/:\d{2}$/, '')
+  const parts = raw.match(/^(\d{4})[-/.\x3a](\d{2})[-/.\x3a](\d{2})(?:[ T](\d{2}):(\d{2})(?::(\d{2})(?:\.\d+)?)?(Z|[+-]\d{2}:?\d{2})?)?$/)
+  if (!parts) return raw
+
+  const [, year, month, day, hour, minute, second, offset = ''] = parts
+  let date = `${year}-${month}-${day}`
+  if (format === 'slash') date = `${year}/${month}/${day}`
+  if (format === 'dot') date = `${year}.${month}.${day}`
+  if (format === 'chinese') date = `${year}年${month}月${day}日`
+  if (format === 'date' || hour === undefined) return date
+
+  // 仅改变显示格式；原始信息没有秒数时保留已有精度。
+  const seconds = format !== 'minute' && second !== undefined ? `:${second}` : ''
+  return `${date} ${hour}:${minute}${seconds}${offset}`
 }
 
 export function splitExifDisplayValue(key: 'FocalLength' | 'FNumber' | 'ExposureTime' | 'ISO', value: unknown) {

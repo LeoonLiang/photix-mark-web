@@ -469,7 +469,7 @@ export class FlexLayoutProcessor extends ImageProcessor {
       }
 
       case 'text': {
-        const text = renderTemplate(item.content || item.text || '', processorCtx.exif)
+        const text = renderTemplate(item.content || item.text || '', processorCtx.exif, processorCtx.config)
         const fontSize = this.calculateSize(item.fontSize || 0.2, canvas.height)
         drawText(ctx, {
           text,

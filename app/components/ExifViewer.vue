@@ -105,7 +105,7 @@
           <div class="flex justify-between items-center py-1">
             <span class="text-muted-foreground">拍摄时间</span>
             <span :class="exif.DateTimeOriginal ? 'text-foreground font-medium text-[10px]' : 'text-muted-foreground/50'">
-              {{ formatDateTime(exif.DateTimeOriginal) }}
+              {{ formatDateTimeValue(exif.DateTimeOriginal) || '未找到' }}
             </span>
           </div>
           <div class="flex justify-between items-center py-1">
@@ -122,6 +122,7 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
+import { formatDateTimeValue } from '~/lib/editor/exif'
 
 const props = defineProps<{
   exif: Record<string, any>
@@ -129,22 +130,6 @@ const props = defineProps<{
 
 const expanded = ref(false)
 
-function formatDateTime(datetime?: string): string {
-  if (!datetime) return '未找到'
-  // EXIF 格式: "2024:01:25 14:30:45"
-  // 转换为: "2024-01-25 14:30"
-  try {
-    const parts = datetime.split(' ')
-    if (parts.length === 2) {
-      const date = parts[0].replace(/:/g, '-')
-      const time = parts[1].substring(0, 5) // 只取小时和分钟
-      return `${date} ${time}`
-    }
-    return datetime
-  } catch {
-    return datetime
-  }
-}
 </script>
 
 <style scoped>

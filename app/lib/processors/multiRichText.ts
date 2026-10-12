@@ -21,7 +21,7 @@ export class MultiRichTextProcessor extends ImageProcessor {
 
     // 渲染每段文本
     const segments = config.text_segments.map((segment: any) => ({
-      text: renderTemplate(segment.text || '', exif),
+      text: renderTemplate(segment.text || '', exif, config),
       color: segment.color || 'white',
       is_bold: segment.is_bold || false,
       trim: segment.trim || false

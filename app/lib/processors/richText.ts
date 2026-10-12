@@ -42,7 +42,7 @@ export class RichTextProcessor extends ImageProcessor {
       }
 
       if (config.showDateTime !== false && exif.DateTimeOriginal) {
-        parts.push(formatDateTimeValue(exif.DateTimeOriginal))
+        parts.push(formatDateTimeValue(exif.DateTimeOriginal, config.dateTimeFormat))
       }
 
       text = parts.join('  ')
@@ -64,7 +64,7 @@ export class RichTextProcessor extends ImageProcessor {
       text = parts.join('  ')
     } else {
       // 渲染模板文本
-      text = renderTemplate(config.text, exif)
+      text = renderTemplate(config.text, exif, config)
     }
 
     if (!text || text.trim() === '') {

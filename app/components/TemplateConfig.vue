@@ -394,6 +394,29 @@
           拍摄时间
         </button>
       </div>
+      <div v-if="hasExifField('showDateTime') && localConfig.showDateTime" class="mt-3 space-y-2 border-t border-slate-100 pt-3">
+        <div class="range-head">
+          <span class="field-label">拍摄时间格式</span>
+          <button @click="resetField('dateTimeFormat')" class="reset-chip">重置</button>
+        </div>
+        <div class="grid grid-cols-1 gap-2" role="group" aria-label="拍摄时间格式">
+          <button
+            v-for="option in DATE_TIME_FORMAT_OPTIONS"
+            :key="option.value"
+            type="button"
+            :aria-pressed="localConfig.dateTimeFormat === option.value"
+            @click="updateConfig('dateTimeFormat', option.value)"
+            class="flex flex-wrap items-center justify-between gap-x-2 gap-y-1 rounded-xl border px-3 py-2 text-left transition"
+            :class="localConfig.dateTimeFormat === option.value
+              ? 'border-slate-900 bg-slate-900 text-white'
+              : 'border-slate-200 bg-white text-slate-600 hover:border-slate-400'"
+          >
+            <span class="text-[11px]">{{ option.label }}</span>
+            <span class="text-[11px] tabular-nums">{{ option.example }}</span>
+          </button>
+        </div>
+        <p class="text-[10px] leading-relaxed text-slate-400">默认精确到秒；若照片未记录秒数，则保留原有精度。</p>
+      </div>
     </section>
   </div>
 </template>
@@ -402,6 +425,7 @@
 import { ref, watch, computed } from 'vue'
 import type { TemplateConfig } from '~/lib/templates/types'
 import { getTemplateDefaultConfig } from '~/lib/templates/userOptions'
+import { DATE_TIME_FORMAT_OPTIONS } from '~/lib/editor/exif'
 
 const props = defineProps<{
   template: TemplateConfig
@@ -527,7 +551,8 @@ function resetContent() {
     'showAperture',
     'showShutter',
     'showISO',
-    'showDateTime'
+    'showDateTime',
+    'dateTimeFormat'
   ]
 
   for (const key of keys) {

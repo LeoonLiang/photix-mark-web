@@ -215,7 +215,7 @@
                     <input
                       :value="exifDraft.DateTimeOriginal || ''"
                       @input="updateExifField('DateTimeOriginal', ($event.target as HTMLInputElement).value)"
-                      placeholder="YYYY:MM:DD HH:mm:ss"
+                      placeholder="2026-10-12 14:30:45"
                       class="w-44 rounded-lg border border-white/10 bg-white/10 px-2 py-1 text-right text-[10px] text-white placeholder:text-white/40 focus:border-white/30 focus:outline-none"
                     />
                   </div>
@@ -379,22 +379,6 @@ const imageSizeText = computed(() => {
 
 const exifDraft = ref<Record<string, any>>({})
 const appliedExifSnapshot = ref<Record<string, any>>({})
-
-// 格式化日期时间
-function formatDateTime(datetime?: string): string {
-  if (!datetime) return '未找到'
-  try {
-    const parts = datetime.split(' ')
-    if (parts.length === 2) {
-      const date = parts[0].replace(/:/g, '-')
-      const time = parts[1].substring(0, 5)
-      return `${date} ${time}`
-    }
-    return datetime
-  } catch {
-    return datetime
-  }
-}
 
 function syncExifDraft() {
   exifDraft.value = { ...(currentExif.value || {}) }

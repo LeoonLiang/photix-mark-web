@@ -53,7 +53,8 @@ export const folderNameParams: TemplateConfig = {
       showFocalLength: true,
       showAperture: true,
       showShutter: true,
-      showISO: true
+      showISO: true,
+      showDateTime: true
     }
   }
 }

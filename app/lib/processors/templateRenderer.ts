@@ -10,7 +10,7 @@ import { formatDateTimeValue, formatShutterValue } from '~/lib/editor/exif'
  * 渲染模板字符串
  * 支持 {{variable}}, {{variable|filter}}, {{variable|filter('arg')}}
  */
-export function renderTemplate(template: string, exif: Record<string, any>): string {
+export function renderTemplate(template: string, exif: Record<string, any>, config: Record<string, any> = {}): string {
   if (!template) return ''
 
   const result = template.replace(/\{\{([^}]+)\}\}/g, (match, expression) => {
@@ -54,7 +54,7 @@ export function renderTemplate(template: string, exif: Record<string, any>): str
     if (datetimeMatch) {
       const [, varName] = datetimeMatch
       const value = getNestedValue(exif, varName.trim())
-      return value ? formatDateTimeValue(value) : ''
+      return value && config.showDateTime !== false ? formatDateTimeValue(value, config.dateTimeFormat) : ''
     }
 
     // 处理 default 过滤器
