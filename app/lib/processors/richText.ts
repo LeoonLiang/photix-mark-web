@@ -42,7 +42,7 @@ export class RichTextProcessor extends ImageProcessor {
       }
 
       if (config.showDateTime !== false && exif.DateTimeOriginal) {
-        parts.push(formatDateTimeValue(exif.DateTimeOriginal, config.dateTimeFormat))
+        parts.push(formatDateTimeValue(exif.DateTimeOriginal, config.dateTimeFormat, config.customDateTimeFormat))
       }
 
       text = parts.join('  ')

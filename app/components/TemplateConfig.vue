@@ -437,7 +437,7 @@
       <div v-if="hasExifField('showDateTime') && localConfig.showDateTime" class="mt-3 space-y-2 border-t border-slate-100 pt-3">
         <div class="range-head">
           <span class="field-label">拍摄时间格式</span>
-          <button @click="resetField('dateTimeFormat')" class="reset-chip">重置</button>
+          <button @click="resetDateTimeFormat" class="reset-chip">重置</button>
         </div>
         <div class="grid grid-cols-1 gap-2" role="group" aria-label="拍摄时间格式">
           <button
@@ -454,6 +454,24 @@
             <span class="text-[11px]">{{ option.label }}</span>
             <span class="text-[11px] tabular-nums">{{ option.example }}</span>
           </button>
+          <button
+            v-for="format in savedDateTimeFormats"
+            :key="format"
+            type="button"
+            :aria-pressed="localConfig.dateTimeFormat === 'custom' && localConfig.customDateTimeFormat === format"
+            @click="applyCustomDateTimeFormat(format)"
+            class="flex flex-wrap items-center justify-between gap-x-2 gap-y-1 rounded-xl border px-3 py-2 text-left text-[11px] transition"
+            :class="localConfig.dateTimeFormat === 'custom' && localConfig.customDateTimeFormat === format
+              ? 'border-slate-900 bg-slate-900 text-white'
+              : 'border-slate-200 bg-white text-slate-600 hover:border-slate-400'"
+          >
+            <span class="min-w-0 break-all">{{ format }}</span>
+            <span class="min-w-0 break-all tabular-nums">{{ formatDateTimeValue('2026-10-12T14:30:45+08:00', 'custom', format) }}</span>
+          </button>
+          <CustomDateTimeDialog
+            :model-value="localConfig.customDateTimeFormat"
+            @apply="applyCustomDateTimeFormat"
+          />
         </div>
         <p class="text-[10px] leading-relaxed text-slate-400">默认精确到秒；若照片未记录秒数，则保留原有精度。</p>
       </div>
@@ -465,7 +483,8 @@
 import { ref, watch, computed } from 'vue'
 import type { TemplateConfig } from '~/lib/templates/types'
 import { getTemplateDefaultConfig } from '~/lib/templates/userOptions'
-import { DATE_TIME_FORMAT_OPTIONS } from '~/lib/editor/exif'
+import { DATE_TIME_FORMAT_OPTIONS, formatDateTimeValue } from '~/lib/editor/exif'
+import { useSavedDateTimeFormats } from '~/composables/useSavedDateTimeFormats'
 
 const props = defineProps<{
   template: TemplateConfig
@@ -487,6 +506,7 @@ function createLocalConfig() {
 }
 
 const localConfig = ref(createLocalConfig())
+const { savedDateTimeFormats, saveFormat } = useSavedDateTimeFormats()
 
 const hasAnyExifField = computed(() => {
   const exifFields = props.template.userOptions.exifFields
@@ -589,6 +609,19 @@ function resetAll() {
   pushConfig({ ...defaults.value })
 }
 
+function applyCustomDateTimeFormat(format: string) {
+  saveFormat(format)
+  pushConfig({ ...localConfig.value, dateTimeFormat: 'custom', customDateTimeFormat: format })
+}
+
+function resetDateTimeFormat() {
+  pushConfig({
+    ...localConfig.value,
+    dateTimeFormat: defaults.value.dateTimeFormat,
+    customDateTimeFormat: defaults.value.customDateTimeFormat
+  })
+}
+
 function resetContent() {
   const nextValue = { ...localConfig.value }
   const keys = [
@@ -601,7 +634,8 @@ function resetContent() {
     'showShutter',
     'showISO',
     'showDateTime',
-    'dateTimeFormat'
+    'dateTimeFormat',
+    'customDateTimeFormat'
   ]
 
   for (const key of keys) {

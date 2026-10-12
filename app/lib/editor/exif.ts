@@ -122,10 +122,15 @@ export const DATE_TIME_FORMAT_OPTIONS = [
   { value: 'date', label: '仅日期', example: '2026-10-12' }
 ] as const
 
-export type DateTimeFormat = typeof DATE_TIME_FORMAT_OPTIONS[number]['value']
+export type DateTimeFormat = typeof DATE_TIME_FORMAT_OPTIONS[number]['value'] | 'custom'
 export const DEFAULT_DATE_TIME_FORMAT: DateTimeFormat = 'datetime'
+export const DEFAULT_CUSTOM_DATE_TIME_FORMAT = 'YYYY-MM-DD HH:mm:ss'
 
-export function formatDateTimeValue(value: unknown, format: DateTimeFormat = DEFAULT_DATE_TIME_FORMAT): string {
+export function formatDateTimeValue(
+  value: unknown,
+  format: DateTimeFormat = DEFAULT_DATE_TIME_FORMAT,
+  customFormat: string = DEFAULT_CUSTOM_DATE_TIME_FORMAT
+): string {
   if (!hasExifValue(value)) return ''
 
   if (value instanceof Date) {
@@ -144,6 +149,22 @@ export function formatDateTimeValue(value: unknown, format: DateTimeFormat = DEF
   if (!parts) return raw
 
   const [, year, month, day, hour, minute, second, offset = ''] = parts
+  if (format === 'custom' && customFormat.trim()) {
+    const unpad = (part: string | undefined) => part === undefined ? undefined : String(Number(part))
+    const tokens: Record<string, string | undefined> = {
+      YYYY: year, YY: year!.slice(-2), MM: month, M: unpad(month),
+      DD: day, D: unpad(day), HH: hour, H: unpad(hour),
+      mm: minute, m: unpad(minute), ss: second, s: unpad(second), Z: offset || undefined
+    }
+    let missingValue = false
+    const formatted = customFormat.trim().replace(/\[([^\]]*)\]|YYYY|YY|MM|DD|HH|mm|ss|M|D|H|m|s|Z/g, (token, literal) => {
+      if (literal !== undefined) return literal
+      if (tokens[token] === undefined) missingValue = true
+      return tokens[token] ?? ''
+    })
+    // 缺少格式要求的信息时保留原有精度，避免补出不存在的时间。
+    return missingValue ? formatDateTimeValue(value) : formatted
+  }
   let date = `${year}-${month}-${day}`
   if (format === 'slash') date = `${year}/${month}/${day}`
   if (format === 'dot') date = `${year}.${month}.${day}`

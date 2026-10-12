@@ -54,7 +54,7 @@ export function renderTemplate(template: string, exif: Record<string, any>, conf
     if (datetimeMatch) {
       const [, varName] = datetimeMatch
       const value = getNestedValue(exif, varName.trim())
-      return value && config.showDateTime !== false ? formatDateTimeValue(value, config.dateTimeFormat) : ''
+      return value && config.showDateTime !== false ? formatDateTimeValue(value, config.dateTimeFormat, config.customDateTimeFormat) : ''
     }
 
     // 处理 default 过滤器

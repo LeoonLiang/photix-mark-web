@@ -379,7 +379,7 @@ export class WatermarkProcessor extends ImageProcessor {
       if (datetimeMatch) {
         const [, varName] = datetimeMatch
         const value = this.getNestedValue(exif, varName.trim())
-        return value ? formatDateTimeValue(value, config?.dateTimeFormat) : ''
+        return value ? formatDateTimeValue(value, config?.dateTimeFormat, config?.customDateTimeFormat) : ''
       }
 
       // 处理 default 过滤器

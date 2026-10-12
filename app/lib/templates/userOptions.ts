@@ -1,5 +1,5 @@
 import type { TemplateConfig } from './types'
-import { DEFAULT_DATE_TIME_FORMAT } from '../editor/exif'
+import { DEFAULT_DATE_TIME_FORMAT, DEFAULT_CUSTOM_DATE_TIME_FORMAT } from '../editor/exif'
 
 export function getTemplateDefaultConfig(template: TemplateConfig): Record<string, any> {
   return {
@@ -12,6 +12,7 @@ export function getTemplateDefaultConfig(template: TemplateConfig): Record<strin
     showISO: template.userOptions.exifFields?.showISO ?? true,
     showDateTime: template.userOptions.exifFields?.showDateTime ?? true,
     dateTimeFormat: DEFAULT_DATE_TIME_FORMAT,
+    customDateTimeFormat: DEFAULT_CUSTOM_DATE_TIME_FORMAT,
     logoEnabled: template.userOptions.logo?.enabled ?? true,
     logoPosition: template.userOptions.logo?.position ?? 'left',
     textColor: template.userOptions.colors?.textColor ?? '#242424',
