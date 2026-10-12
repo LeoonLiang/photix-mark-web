@@ -16,6 +16,8 @@ export function getTemplateDefaultConfig(template: TemplateConfig): Record<strin
     logoPosition: template.userOptions.logo?.position ?? 'left',
     textColor: template.userOptions.colors?.textColor ?? '#242424',
     secondaryTextColor: template.userOptions.colors?.secondaryTextColor ?? '#666666',
+    nikonZColor: template.userOptions.colors?.nikonZColor ?? '#FF0000',
+    nikonZScale: template.userOptions.nikonZ?.scale ?? 1.2,
     backgroundColor: template.userOptions.background?.backgroundColor ?? '#FFFFFF',
     padding: template.userOptions.layout?.padding ?? 0.03,
     imageMargin: template.userOptions.layout?.imageMargin ?? 0.12,

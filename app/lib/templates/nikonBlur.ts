@@ -2,12 +2,12 @@ import type { TemplateConfig } from './types'
 
 /**
  * 尼康专用背景模糊模板
- * 尼康 Z 系列相机专用，红色 Z 字母
+ * 尼康 Z 系列相机专用，支持三色 Nikkor Z 标识
  */
 export const nikonBlur: TemplateConfig = {
   id: 'nikonBlur',
   name: 'Z系列专版',
-  description: '尼康 Z 系列专用，红色 Z 字突出显示',
+  description: '尼康 Z 系列专用，Z 标识可选红、黑、黄三色',
   preview: '/templates/nikon_blur.jpg',
 
   processors: [
@@ -30,10 +30,11 @@ export const nikonBlur: TemplateConfig = {
           trim: true
         },
         {
-          text: 'Z',
-          color: 'red',
-          is_bold: true,
-          trim: true
+          image: '/logos/Nikkor-ZZ.svg',
+          image_scale: 1.2,  // 只缩放 Z 标识：0.8 缩小 20%，1.2 放大 20%；不改变型号文字和占位
+          image_scale_key: 'nikonZScale',
+          color: '#FFCC00',
+          color_key: 'nikonZColor'
         },
         {
           text: '{{Model|partition("Z")[2]|replace("_", "")}}',  // Z 之后的部分
@@ -121,6 +122,12 @@ export const nikonBlur: TemplateConfig = {
   ],
 
   userOptions: {
+    nikonZ: {
+      scale: 1.2
+    },
+    colors: {
+      nikonZColor: '#FFCC00'
+    },
     exifFields: {
       showLens: false,
       showFocalLength: true,

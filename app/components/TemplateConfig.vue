@@ -20,6 +20,27 @@
         <h3 class="section-title">颜色</h3>
       </div>
       <div class="space-y-2.5 sm:space-y-3">
+        <div v-if="hasColor('nikonZColor')" class="field-row">
+          <span class="field-label">Z 标识颜色</span>
+          <div class="field-actions" role="group" aria-label="Z 标识颜色">
+            <button
+              v-for="option in nikonZColorOptions"
+              :key="option.value"
+              type="button"
+              :aria-pressed="localConfig.nikonZColor === option.value"
+              :class="pillClass(localConfig.nikonZColor === option.value)"
+              @click="updateConfig('nikonZColor', option.value)"
+            >
+              <span
+                class="mr-1 inline-block h-2.5 w-2.5 rounded-full border border-slate-300 align-middle"
+                :style="{ backgroundColor: option.value }"
+                aria-hidden="true"
+              />
+              {{ option.label }}
+            </button>
+            <button @click="resetField('nikonZColor')" class="reset-chip">重置</button>
+          </div>
+        </div>
         <div v-if="hasColor('textColor')" class="field-row">
           <label class="field-label">文字颜色</label>
           <div class="field-actions">
@@ -42,6 +63,25 @@
             <button @click="resetField('secondaryTextColor')" class="reset-chip">重置</button>
           </div>
         </div>
+      </div>
+    </section>
+
+    <section v-if="template.userOptions.nikonZ" class="config-card">
+      <div class="section-head">
+        <h3 class="section-title">Z 标识大小</h3>
+        <button @click="resetField('nikonZScale')" class="reset-chip">重置</button>
+      </div>
+      <div class="flex flex-wrap gap-2" role="group" aria-label="Z 标识大小">
+        <button
+          v-for="scale in nikonZScaleOptions"
+          :key="scale"
+          type="button"
+          :aria-pressed="localConfig.nikonZScale === scale"
+          :class="pillClass(localConfig.nikonZScale === scale)"
+          @click="updateConfig('nikonZScale', scale)"
+        >
+          {{ scale }}×
+        </button>
       </div>
     </section>
 
@@ -465,6 +505,15 @@ const hasShadowConfig = computed(() => props.template.userOptions.shadow !== und
 const hasBlurConfig = computed(() => props.template.userOptions.blur !== undefined)
 const hasLayoutConfig = computed(() => props.template.userOptions.layout !== undefined)
 const hasPersonalTextConfig = computed(() => props.template.userOptions.personalText !== undefined)
+
+const nikonZColorOptions = [
+  { label: '红', value: '#FF0000' },
+  { label: '黑', value: '#000000' },
+  { label: '黄', value: '#FFCC00' },
+  { label: '白', value: '#FFFFFF' }
+]
+
+const nikonZScaleOptions = [0.8, 1, 1.2]
 
 const textPositionOptions = [
   { label: '下中', value: 'bottom-center' },

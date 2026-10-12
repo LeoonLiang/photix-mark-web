@@ -22,10 +22,16 @@ export interface TemplateUserOptions {
     position?: 'left-top' | 'right-top' | 'left-bottom' | 'right-bottom' | 'top-center'
   }
 
+  /** Nikon Z 标识大小 */
+  nikonZ?: {
+    scale: 0.8 | 1 | 1.2
+  }
+
   /** 颜色控制 */
   colors?: {
     textColor?: string
     secondaryTextColor?: string
+    nikonZColor?: '#FF0000' | '#000000' | '#FFCC00'
   }
 
   /** 背景色控制 */
